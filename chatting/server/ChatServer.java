@@ -41,6 +41,7 @@ public class ChatServer extends WebSocketServer {
             // 현재 클라이언트에게는 메시지를 전송하지 않음
             if (user.getWebSocket() == conn) {
                 users.remove(user);
+                break;
             }
         }
     }
