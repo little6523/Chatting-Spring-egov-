@@ -89,6 +89,13 @@ body {
     list-style: none;
 }
 
+.participant {
+    background-color: white;
+    color: black;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
 .participants-list li {
     padding: 10px 0;
     display: flex;
