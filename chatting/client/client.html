@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>채팅 애플리케이션</title>
     <link rel="stylesheet" href="client.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <!-- 닉네임 설정 모달 -->
@@ -12,7 +13,7 @@
         <div class="modal-content">
             <h2>닉네임을 입력하세요</h2>
             <input type="text" id="nicknameInput" placeholder="닉네임">
-            <button id="submitNickname">확인</button>
+            <button id="submitNickname" onclick="connectWebSocket()">확인</button>
         </div>
     </div>
     <div class="container">
@@ -20,7 +21,7 @@
         <div class="sidebar">
             <div class="user-profile">
                 <img src="default-avatar.png" alt="프로필" class="profile-img">
-                <span class="username">사용자 이름</span>
+                <span class="username" id="username">사용자 이름</span>
             </div>
             <h3>참가자 목록</h3>
             <ul class="participants-list" id="participantsList">
@@ -33,7 +34,10 @@
             <!-- 채팅방 정보 -->
             <div class="chat-header">
                 <h2>채팅방 이름</h2>
-                <span class="participant-count">참가자: 3명</span>
+                <div class="chat-info">
+                    <span class="participant-count">참가자: </span>
+                    <span class="participant-count" id="userNumber">0</span>
+                </div>
             </div>
 
             <!-- 채팅 메시지 영역 -->
