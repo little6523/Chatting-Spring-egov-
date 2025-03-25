@@ -1,54 +1,75 @@
 const USER = {
-    connect: '1', // 1: 새로 생성됨을 의미함
-    name: "user" + Math.random(),
-    message: null
+    name: "user" + Math.random()
 }
 
-const socket = new WebSocket('ws://localhost:12345');  // 서버 주소와 포트 설정
+const SOCKET = {
+    socket: null,
 
-// 서버 - 클라이언트 소켓 연결
-socket.onopen = function(event) {
-    console.log("WebSocket 연결 성공");
-    socket.send(JSON.stringify(USER));
-};
+    connect: function() {
+        socket = new WebSocket('ws://localhost:12345');  // 서버 주소와 포트 설정
+        socket.onopen = SOCKET.onopen;
+        socket.onmessage = SOCKET.onmessage;
+        // 전송 버튼 클릭 이벤트
+        document.getElementById("sendButton").addEventListener("click", SOCKET.sendMessage);
+    },
 
-// 서버로 메시지를 보내는 함수
-function sendMessage() {
-    const message = document.getElementById("messageInput").value;  // 입력된 메시지 가져오기
-    USER.connect = '2';
-    USER.message = message;
-    socket.send(JSON.stringify(USER));  // 메시지 전송
-    document.getElementById("messageInput").value = "";  // 입력창 초기화
+    onopen: function() {
+        console.log("WebSocket 연결 성공");
+        socket.send(JSON.stringify(USER));
+    },
 
-    let selfMessage = "<div class='message sent'>" + '나: ' + message + "</div>";
-    let chatMessages = document.getElementById("chatMessages");
-    chatMessages.innerHTML += selfMessage;
+    onmessage: function(event) {
+        const json = JSON.parse(event.data);
+
+        if (json.hasOwnProperty("userNumber") && json.hasOwnProperty("userNames")) {
+            document.getElementById("userNumber").textContent = json.userNumber;
+
+            const participantsList = document.getElementById("participantsList");
+            let users = "";
+            json.userNames.forEach(name => {
+                if (name == USER.name) {
+                    users += "<li class='participant'> 나: " + name + "</li>";
+                } else {
+                    users += "<li>" + name + "</li>";
+                }
+            });
+            participantsList.innerHTML = users;
+            return;
+        }
+
+        if (json.hasOwnProperty("name") && json.hasOwnProperty("message")) {
+            const chatMessages = document.getElementById("chatMessages");
+            let newMessage = "<div class='message received'>" + json.name + ": " + json.message + "</div>";
+            chatMessages.innerHTML += newMessage;
+            return;
+        }
+    },
+
+    sendMessage: function() {
+        data = {};
+        data.message = document.getElementById("messageInput").value;  // 입력된 메시지 가져오기
+        socket.send(JSON.stringify(data));  // 메시지 전송
+        document.getElementById("messageInput").value = "";  // 입력창 초기화
+    
+        let selfMessage = "<div class='message sent'>" + '나: ' + data.message + "</div>";
+        let chatMessages = document.getElementById("chatMessages");
+        chatMessages.innerHTML += selfMessage;
+    }
 }
 
-// 메시지 수신 처리
-socket.onmessage = function(event) {
-    const chatMessages = document.getElementById("chatMessages");
-
-    let newMessage = "<div class='message received'>" + event.data + "</div>";
-    chatMessages.innerHTML += newMessage;
-}
-
-// 전송 버튼 클릭 이벤트
-document.getElementById("sendButton").addEventListener("click", sendMessage);
-
-document.addEventListener('DOMContentLoaded', function() {
+function connectWebSocket() {
     const modal = document.getElementById('nicknameModal');
     const nicknameInput = document.getElementById('nicknameInput');
-    const submitButton = document.getElementById('submitNickname');
 
-    submitButton.addEventListener('click', function() {
-        const nickname = nicknameInput.value.trim();
-        if (nickname) {
-            // 닉네임을 저장하고 모달 닫기
-            USER.name = nickname;
-            modal.style.display = 'none';
-        } else {
-            alert('닉네임을 입력해주세요!');
-        }
-    });
-});
+    const nickname = nicknameInput.value.trim();
+    if (nickname) {
+        // 닉네임을 저장하고 모달 닫기
+        USER.name = nickname;
+        document.getElementById('username').textContent = nickname;
+        modal.style.display = 'none';
+    } else {
+        alert('닉네임을 입력해주세요!');
+    }
+
+    SOCKET.connect();
+}
