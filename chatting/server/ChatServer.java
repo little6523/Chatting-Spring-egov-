@@ -3,8 +3,10 @@ package chat;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -16,8 +18,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ChatServer extends WebSocketServer {
 
+    private static final String SERVER_ADDRESS = "127.0.0.1"; // 서버 IP 주소
     private static final int PORT = 12345;  // 서버 포트 번호
-    private static final String SERVER_ADDRESS = "127.0.0.1";
+    
+    // => 일반 List를 사용하지 않은 이유: 향상된 for문으로 돌려서 요소를 제거하면 ConcurrentModificationException 오류 발생
+    // => 해결방법: 1. Iterator를 통해 요소 추가 및 삭제 / 2. CopyOnWriteArrayList 활용
+    // private CopyOnWriteArrayList<User> users; // 접속 중인 유저리스트
     private List<User> users;
 
     public static void main(String[] args) {
@@ -46,24 +52,36 @@ public class ChatServer extends WebSocketServer {
     @Override
     public void onClose(WebSocket conn, int code, String reason, boolean remote) {
         System.out.println("클라이언트 연결 종료: " + conn.getRemoteSocketAddress());
-        for (User user : users) {
-            if (user.getWebSocket() == conn) {
-                users.remove(user);
-                break;
+        Map<String, Object> participation = new HashMap<>();
+        List<String> userNames = new ArrayList<>();
+        Iterator<User> iterator = users.iterator();
+        while (iterator.hasNext()) {
+        	User u = iterator.next();
+            if (u.getWebSocket() != conn) {
+            	userNames.add(u.getName());
+            	continue;
             }
+            iterator.remove();
         }
+        
+        participation.put("userNumber", users.size());
+        participation.put("userNames", userNames);
+        try {
+			sendToAll(participation);
+		} catch (JsonProcessingException e) {
+			e.printStackTrace();
+		}
     }
 
     @Override
     public void onMessage(WebSocket conn, String data) {
     	
         try {
-            // 메시지를 JSON 객체로 변환
             Map<String, Object> map = new HashMap<>();
-            map = new ObjectMapper().readValue(data, Map.class);
-            System.out.println("클라이언트 정보: " + map);
+            map = jsonToMap(data);
             
             if (map.containsKey("name")) {
+                System.out.println("클라이언트 이름: " + map);
             	String name = (String) map.get("name");
             	InetSocketAddress isa = (InetSocketAddress) conn.getRemoteSocketAddress();
                 User newUser = new User(name, isa.getAddress().getHostAddress(), isa.getPort(), conn);
@@ -105,14 +123,17 @@ public class ChatServer extends WebSocketServer {
     @Override
     public void onStart() {
         System.out.println("서버 시작됨...");
+//        users = new CopyOnWriteArrayList<>();
         users = new ArrayList<>();
     }
     
+    // 특정 유저에게 메시지 전송
     private void sendToOne(WebSocket conn, Map<String, Object> message) throws JsonProcessingException {
     	String jsonMessage = mapToJson(message);
     	conn.send(jsonMessage);
 	}
     
+    // 모든 유저에게 메시지 전송
     private void sendToAll(Map<String, Object> message) throws JsonProcessingException {
 		for (User user : users) {
 			String jsonMessage = mapToJson(message);
