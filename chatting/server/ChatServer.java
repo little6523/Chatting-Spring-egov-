@@ -86,9 +86,7 @@ public class ChatServer extends WebSocketServer {
                 for (User user : users) {
                     // 현재 클라이언트에게는 메시지를 전송하지 않음
                     if (user.getWebSocket() != conn) {
-                    	Map<String, Object> message = new HashMap<>();
                     	map.put("name", user.getName());
-                    	map.put("name", map.get("message"));
                     	sendToOne(user.getWebSocket(), map);
                     }
                 }
