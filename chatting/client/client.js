@@ -2,59 +2,48 @@ const USER = {
     name: "user" + Math.random()
 }
 
-const SOCKET = {
-    socket: null,
+function onopen() {
+    console.log("WebSocket 연결 성공");
+}
 
-    connect: function() {
-        socket = new WebSocket('ws://localhost:12345');  // 서버 주소와 포트 설정
-        socket.onopen = SOCKET.onopen;
-        socket.onmessage = SOCKET.onmessage;
-        // 전송 버튼 클릭 이벤트
-        document.getElementById("sendButton").addEventListener("click", SOCKET.sendMessage);
-    },
+function onmessage(event) {
+    const json = JSON.parse(event.data);
 
-    onopen: function() {
-        console.log("WebSocket 연결 성공");
-        socket.send(JSON.stringify(USER));
-    },
+    if (json.hasOwnProperty("userNumber") && json.hasOwnProperty("userNames")) {
+        document.getElementById("userNumber").textContent = json.userNumber;
 
-    onmessage: function(event) {
-        const json = JSON.parse(event.data);
-
-        if (json.hasOwnProperty("userNumber") && json.hasOwnProperty("userNames")) {
-            document.getElementById("userNumber").textContent = json.userNumber;
-
-            const participantsList = document.getElementById("participantsList");
-            let users = "";
-            json.userNames.forEach(name => {
-                if (name == USER.name) {
-                    users += "<li class='participant'> 나: " + name + "</li>";
-                } else {
-                    users += "<li>" + name + "</li>";
-                }
-            });
-            participantsList.innerHTML = users;
-            return;
-        }
-
-        if (json.hasOwnProperty("name") && json.hasOwnProperty("message")) {
-            const chatMessages = document.getElementById("chatMessages");
-            let newMessage = "<div class='message received'>" + json.name + ": " + json.message + "</div>";
-            chatMessages.innerHTML += newMessage;
-            return;
-        }
-    },
-
-    sendMessage: function() {
-        data = {};
-        data.message = document.getElementById("messageInput").value;  // 입력된 메시지 가져오기
-        socket.send(JSON.stringify(data));  // 메시지 전송
-        document.getElementById("messageInput").value = "";  // 입력창 초기화
-    
-        let selfMessage = "<div class='message sent'>" + '나: ' + data.message + "</div>";
-        let chatMessages = document.getElementById("chatMessages");
-        chatMessages.innerHTML += selfMessage;
+        const participantsList = document.getElementById("participantsList");
+        let users = "";
+        json.userNames.forEach(name => {
+            if (name == USER.name) {
+                users += "<li class='participant'> 나: " + name + "</li>";
+            } else {
+                users += "<li>" + name + "</li>";
+            }
+        });
+        participantsList.innerHTML = users;
+        return;
     }
+
+    if (json.hasOwnProperty("name") && json.hasOwnProperty("message")) {
+        const chatMessages = document.getElementById("chatMessages");
+        let newMessage = "<div class='message received'>" + json.name + ": " + json.message + "</div>";
+        chatMessages.innerHTML += newMessage;
+        return;
+    }
+}
+
+SOCKET.connect(onopen, onmessage);
+
+function sendMessage() {
+    data = {};
+    data.message = document.getElementById("messageInput").value;  // 입력된 메시지 가져오기
+    SOCKET.socket.send(JSON.stringify(data));  // 메시지 전송
+    document.getElementById("messageInput").value = "";  // 입력창 초기화
+    
+    let selfMessage = "<div class='message sent'>" + '나: ' + data.message + "</div>";
+    let chatMessages = document.getElementById("chatMessages");
+    chatMessages.innerHTML += selfMessage;
 }
 
 function connectWebSocket() {
@@ -71,5 +60,5 @@ function connectWebSocket() {
         alert('닉네임을 입력해주세요!');
     }
 
-    SOCKET.connect();
+    SOCKET.socket.send(JSON.stringify(USER));
 }
