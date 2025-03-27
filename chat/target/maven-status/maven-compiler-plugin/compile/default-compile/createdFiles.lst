@@ -1,0 +1,9 @@
+chat\api\controller\ChatApiController.class
+chat\api\service\impl\ChatApiServiceImpl.class
+chat\webview\controller\ChatController.class
+chat\api\mapper\ChatApiMapper.class
+chat\webview\mapper\ChatMapper.class
+interceptor\MyBatisInterceptor.class
+chat\api\service\ChatApiService.class
+chat\webview\service\ChatService.class
+chat\webview\service\impl\ChatServiceImpl.class
