@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CK Talk</title>
+    <link rel="stylesheet" href="login.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="app-header">
+                <img src="ckInfo2.png" alt="채팅 앱 로고" class="app-logo">
+                <h1 class="app-title">CK Talk</h1>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="input-group">
+                    <label for="userId">아이디</label>
+                    <input type="text" id="userId" name="userId" placeholder="아이디를 입력하세요" required>
+                </div>
+                <div class="input-group">
+                    <label for="userPassword">비밀번호</label>
+                    <input type="password" id="userPassword" name="userPassword" placeholder="비밀번호를 입력하세요" required>
+                </div>
+                <button type="submit" class="login-button">로그인</button>
+            </form>
+        </div>
+    </div>
+    <script src="login.js"></script>
+</body>
+</html>
