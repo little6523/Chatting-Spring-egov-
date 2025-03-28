@@ -8,7 +8,13 @@
         <context:include-filter type="annotation" expression="org.springframework.stereotype.Service"/>
         <context:include-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
         <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+        <context:exclude-filter type="annotation" expression="annotation.chat"/>
     </context:component-scan>
+    
+<!--     <context:component-scan base-package="chat.socket">
+		<context:exclude-filter type="annotation"
+			expression="org.springframework.stereotype.Component" />
+	</context:component-scan> -->
 
 	<bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
 		<property name="basenames">
