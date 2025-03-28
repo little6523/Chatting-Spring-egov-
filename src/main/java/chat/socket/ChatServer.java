@@ -27,6 +27,7 @@ public class ChatServer {
 
         // 클라이언트가 연결되었을 때 메시지 전송
         Map<String, Object> map = new HashMap<>();
+        map.put("name", "서버");
         map.put("message", "서버에 연결되었습니다!");
         sendMessage(session, map);
 

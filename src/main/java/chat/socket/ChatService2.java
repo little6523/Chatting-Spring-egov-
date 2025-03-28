@@ -29,24 +29,7 @@ public class ChatService2 {
     public void addUser(User user) {
         users.add(user);
     }
-
-    public Map<String, Object> removeUser(Session session) {
-        Map<String, Object> participation = new HashMap<>();
-        List<String> userNames = new ArrayList<>();
-        Iterator<User> iterator = users.iterator();
-        while (iterator.hasNext()) {
-            User u = iterator.next();
-            if (u.getSession() != session) {
-                userNames.add(u.getName());
-                continue;
-            }
-            iterator.remove();
-        }
-        participation.put("userNumber", users.size());
-        participation.put("userNames", userNames);
-        return participation;
-    }
-
+    
     // 새로 연결된 클라이언트가 있는 경우
     public Map<String, Object> newClient(Map<String, Object> dataMap, Session session) {
         System.out.println("클라이언트 이름: " + dataMap.get("name"));
@@ -61,6 +44,23 @@ public class ChatService2 {
         for (User user : users) {
             userNames.add(user.getName());
         }
+        participation.put("userNames", userNames);
+        return participation;
+    }
+
+    public Map<String, Object> removeUser(Session session) {
+        Map<String, Object> participation = new HashMap<>();
+        List<String> userNames = new ArrayList<>();
+        Iterator<User> iterator = users.iterator();
+        while (iterator.hasNext()) {
+            User u = iterator.next();
+            if (u.getSession() != session) {
+                userNames.add(u.getName());
+                continue;
+            }
+            iterator.remove();
+        }
+        participation.put("userNumber", users.size());
         participation.put("userNames", userNames);
         return participation;
     }
