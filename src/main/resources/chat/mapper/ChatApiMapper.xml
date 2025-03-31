@@ -7,4 +7,15 @@
         SELECT * 
         FROM test
     </select>
+    
+    <select id="getUser" resultType="map">
+    	SELECT *
+    	FROM users
+    	WHERE name = #{name} and password = #{password}
+    </select>
+    
+    <insert id="createRoom">
+    	INSERT INTO room (name, manager)
+    	VALUE (#{name}, #{manager});
+    </insert>
 </mapper>

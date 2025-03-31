@@ -1,5 +1,6 @@
 package chat.api.controller;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Resource;
@@ -7,7 +8,10 @@ import javax.annotation.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import chat.api.service.ChatApiService;
@@ -24,5 +28,33 @@ public class ChatApiController {
 		HttpHeaders headers = new HttpHeaders();
 		Map<String, Object> reuslt = chatApiService.test();
 		return ResponseEntity.ok().headers(headers).body(reuslt);
+	}
+	
+	@PostMapping("/login")
+	public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, Object> body) {
+		HttpHeaders headers = new HttpHeaders();
+		boolean login = chatApiService.login(body);
+		Map<String, Object> result = new HashMap<>();
+		if (!login) {
+			result.put("result", "실패");
+			result.put("rspCode", "2");
+			return ResponseEntity.ok().headers(headers).body(result);
+		}
+		
+		result.put("reuslt", "성공");
+		result.put("rspCode", "1");
+		return ResponseEntity.ok().headers(headers).body(result);
+	}
+	
+	@PostMapping("/createRoom")
+	public ResponseEntity<Map<String, Object>> createRoom(@RequestBody Map<String, Object> body) {
+		System.out.println("방 정보: " + body);
+		int roomNumber = chatApiService.createRoom(body);
+		HttpHeaders headers = new HttpHeaders();
+		Map<String, Object> result = new HashMap<>();
+		result.put("rspCode", "1");
+		result.put("roomNumber", roomNumber);
+		
+		return ResponseEntity.ok().headers(headers).body(result);
 	}
 }

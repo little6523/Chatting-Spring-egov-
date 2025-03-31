@@ -4,8 +4,10 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import chat.webview.service.ChatService;
 
@@ -22,21 +24,22 @@ public class ChatController {
 		return "index";
 	}
 	
-	@GetMapping("/chat")
-	public String chat() {
+	@GetMapping("/login")
+	public String login() {
 		return "login";
 	}
 	
-	@GetMapping("/chat/rooms")
+	@GetMapping("/chat")
 	public String chatRoom() {
 		return "roomlist";
 	}
 	
-	@GetMapping("/chat/rooms/1")
-	public String room(HttpServletRequest request) {
+	@GetMapping("/chat/rooms")
+	public String enterRoom(HttpServletRequest request, @RequestParam("roomName") String roomName, Model model) {
 		String clientIP = request.getRemoteAddr();  // 클라이언트 IP
         int clientPort = request.getRemotePort();  // 클라이언트 포트 번호
         System.out.println(clientIP + ":" + clientPort);
+        model.addAttribute("roomName", roomName);
 		return "client";
 	}
 }

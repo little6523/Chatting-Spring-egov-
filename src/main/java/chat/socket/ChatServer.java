@@ -2,6 +2,7 @@ package chat.socket;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.websocket.OnClose;
@@ -9,18 +10,26 @@ import javax.websocket.OnError;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
+import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
+
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-@ServerEndpoint("/chat")
-public class ChatServer {
+import annotation.chat;
+import chat.socket.config.ChatServerConfig;
 
-    private static ChatService2 chatService2 = new ChatService2();
+@ServerEndpoint(value = "/chat/{roomName}", configurator = ChatServerConfig.class)
+@chat
+public class ChatServer {
+	
+	@Autowired
+	private ChattingRoomManager chattingRoomManager;
 
     @OnOpen
-    public void onOpen(Session session) throws IOException {
+    public void onOpen(@PathParam("roomName") String roomName, Session session) throws IOException {
         String clientAddress = session.getRequestURI().getHost();
         int clientPort = session.getRequestURI().getPort();
         System.out.println("새 클라이언트 연결됨: " + clientAddress + ":" + clientPort);
@@ -30,43 +39,40 @@ public class ChatServer {
         map.put("name", "서버");
         map.put("message", "서버에 연결되었습니다!");
         sendMessage(session, map);
-
-        // 서비스 초기화
-        chatService2.init();
     }
 
     @OnClose
     public void onClose(Session session) throws IOException {
         System.out.println("클라이언트 연결 종료: " + session.getId());
-        Map<String, Object> participation = chatService2.removeUser(session);
-        sendToAll(participation);
     }
 
     @OnMessage
     public void onMessage(Session session, String data) {
         try {
-            Map<String, Object> dataMap = jsonToMap(data);
+            Map<String, Object> message = jsonToMap(data);
+            String roomName = (String) message.get("roomName");
+            Room room = chattingRoomManager.getChattingRoom(roomName);
 
-            if (dataMap.containsKey("name")) {
-                Map<String, Object> participation = chatService2.newClient(dataMap, session);
-                sendToAll(participation);
+            if (message.containsKey("name")) {	
+                List<User> users = chattingRoomManager.newClient(message, roomName, session);
+                Map<String, Object> participants = new HashMap<>();
+                participants.put("users", users);
+                sendToAll(users, participants);
                 return;
             }
 
-            if (dataMap.containsKey("message")) {
-                for (User user : chatService2.getUsers()) {
+            if (message.containsKey("message")) {
+                for (User user : room.getParticipatns()) {
                     if (user.getSession() != session) {
-                        dataMap.put("name", user.getName());
-                        sendMessage(user.getSession(), dataMap);
+                    	message.put("name", user.getName());
+                        sendMessage(user.getSession(), message);
                     }
                 }
                 return;
             }
-
-            if (dataMap.containsKey("room")) {
-                // 방을 개설하는 로직
-//                User manager = new User("철수", "127.0.0.1", 7777);
-//                chatService2.createRoom("심심해서 만든 방", manager);
+            
+            if (message.containsKey("close")) {
+            	chattingRoomManager.removeUser(session, roomName);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -90,8 +96,8 @@ public class ChatServer {
     }
 
     // 모든 유저에게 메시지 전송
-    private void sendToAll(Map<String, Object> message) {
-        for (User user : chatService2.getUsers()) {
+    private void sendToAll(List<User> users, Map<String, Object> message) {
+        for (User user : users) {
             try {
                 sendMessage(user.getSession(), message);
             } catch (IOException e) {
