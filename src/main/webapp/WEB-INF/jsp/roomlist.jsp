@@ -41,10 +41,6 @@
                 <label for="roomNameInput">채팅방 이름</label>
                 <input type="text" id="roomNameInput" placeholder="채팅방 이름을 입력하세요">
             </div>
-            <div class="input-group">
-                <label for="portInput">포트 주소</label>
-                <input type="number" id="portInput" placeholder="포트 번호를 입력하세요" min="1024" max="65535">
-            </div>
             <div class="modal-buttons">
                 <button id="submitRoom">만들기</button>
                 <button id="cancelRoom">취소</button>
@@ -52,6 +48,7 @@
         </div>
     </div>
 
-    <script src="../../js/roomlist.js"></script>
+    <script src="/js/roomlist.js"></script>
+    <script src="/js/ajax.js"></script>
 </body>
 </html>

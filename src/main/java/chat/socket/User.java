@@ -10,6 +10,10 @@ public class User {
 //    private int port;
     private Session session;
     
+    public User(String name) {
+    	this.name = name;
+    }
+    
     public User(String name, Session session) {
     	this.name = name;
     	this.session = session;

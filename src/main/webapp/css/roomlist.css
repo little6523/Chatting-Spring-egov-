@@ -31,15 +31,36 @@
 }
 
 .room-item {
-    display: flex;
-    justify-content: space-between;
+    position: relative;
     padding: 15px;
     border-bottom: 1px solid #eee;
     cursor: pointer;
 }
 
 .room-item:hover {
-    background-color: #f8f8f8;
+    background-color: #f5f5f5;
+}
+
+.enter-btn {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: none;
+    padding: 8px 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.enter-btn:hover {
+    background-color: #45a049;
+}
+
+.room-item:hover .enter-btn {
+    display: block;
 }
 
 .room-info h3 {

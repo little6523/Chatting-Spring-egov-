@@ -11,13 +11,13 @@
 </head>
 <body>
     <!-- 닉네임 설정 모달 -->
-    <div id="nicknameModal" class="modal">
+<!--     <div id="nicknameModal" class="modal">
         <div class="modal-content">
             <h2>닉네임을 입력하세요</h2>
             <input type="text" id="nicknameInput" placeholder="닉네임">
             <button id="submitNickname" onclick="connectWebSocket()">확인</button>
         </div>
-    </div>
+    </div> -->
     <div class="container">
         <!-- 사이드바 - 참가자 목록 -->
         <div class="sidebar">
@@ -35,7 +35,7 @@
         <div class="main-content">
             <!-- 채팅방 정보 -->
             <div class="chat-header">
-                <h2>채팅방 이름</h2>
+                <h2 id="roomName">${roomName}</h2>
                 <div class="chat-info">
                     <span class="participant-count">참가자: </span>
                     <span class="participant-count" id="userNumber">0</span>

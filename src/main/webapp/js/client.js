@@ -1,28 +1,34 @@
 const USER = {
-	name: "user" + Math.random()
+	name: sessionStorage.getItem('username'),
+	roomName: document.getElementById('roomName').innerText
 }
 
-SOCKET.connect();
+document.getElementById('username').innerText = sessionStorage.getItem('username');
+const roomName = USER.roomName;
+
+SOCKET.connect(document.getElementById('roomName').innerText);
 
 SOCKET.init(
 	() => {
 		console.log("WebSocket 연결 성공");
+		SOCKET.socket.send(JSON.stringify(USER));
 	},
+	
 	(event) => {
 		const json = JSON.parse(event.data);
-		if (json.hasOwnProperty("userNumber") && json.hasOwnProperty("userNames")) {
-			document.getElementById("userNumber").textContent = json.userNumber;
+		if (json.hasOwnProperty("users")) {
+			document.getElementById("userNumber").textContent = json.users.length;
 
 			const participantsList = document.getElementById("participantsList");
-			let users = "";
-			json.userNames.forEach(name => {
-				if (name == USER.name) {
-					users += "<li class='participant'> 나: " + name + "</li>";
+			let userList = "";
+			json.users.forEach(user => {
+				if (user.name == USER.name) {
+					userList += "<li class='participant'> 나: " + user.name + "</li>";
 				} else {
-					users += "<li>" + name + "</li>";
+					userList += "<li>" + user.name + "</li>";
 				}
 			});
-			participantsList.innerHTML = users;
+			participantsList.innerHTML = userList;
 			return;
 		}
 
@@ -32,10 +38,21 @@ SOCKET.init(
 			chatMessages.innerHTML += newMessage;
 			return;
 		}
-	});
+	},
+	
+	() => {
+		data = {}
+		data.close = true;
+		data.roomName = roomName;
+		data.user = USER;
+		SOCKET.socket.send(JSON.stringify(data));
+	}
+	
+	)
 
 function sendMessage() {
 	data = {};
+	data.roomName = roomName;
 	data.message = document.getElementById("messageInput").value;  // 입력된 메시지 가져오기
 	SOCKET.socket.send(JSON.stringify(data));  // 메시지 전송
 	document.getElementById("messageInput").value = "";  // 입력창 초기화
@@ -45,7 +62,7 @@ function sendMessage() {
 	chatMessages.innerHTML += selfMessage;
 }
 
-function connectWebSocket() {
+/*function connectWebSocket() {
 	const modal = document.getElementById('nicknameModal');
 	const nicknameInput = document.getElementById('nicknameInput');
 
@@ -60,4 +77,4 @@ function connectWebSocket() {
 	}
 
 	SOCKET.socket.send(JSON.stringify(USER));
-}
+}*/

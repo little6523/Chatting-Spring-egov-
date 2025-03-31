@@ -1,5 +1,6 @@
 package chat.socket;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -18,6 +19,7 @@ public class Room {
 	public Room(String roomName, String manager) {
 		this.roomName = roomName;
 		this.manager = manager;
+		this.participants = new ArrayList<>();
 	}
 	
 	public String getRoomName() {
