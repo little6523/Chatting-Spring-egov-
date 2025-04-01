@@ -2,12 +2,14 @@ package chat.socket;
 
 import javax.websocket.Session;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class User {
 //	private String id;
 //	private String password;
     private String name;
-//    private String ip;
-//    private int port;
+    
+    @JsonIgnore
     private Session session;
     
     public User(String name) {
@@ -36,14 +38,6 @@ public class User {
     public String getName() {
         return name;
     }
-    
-//    public String getIp() {
-//        return ip;
-//    }
-//    
-//    public int getPort() {
-//        return port;
-//    }
 
     public Session getSession() {
         return session;

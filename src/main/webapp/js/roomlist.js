@@ -29,6 +29,12 @@ window.onclick = function(event) {
 
 document.getElementById('username').innerText = sessionStorage.getItem('username');
 
+document.querySelectorAll(".room-item").forEach(room => {
+	room.addEventListener("click", function() {
+		window.location.href = '/webview/chat/rooms?roomName=' + $(this).attr("data-room");
+	});
+});
+
 // 채팅방 생성 제출
 submitBtn.onclick = function() {
 	const roomName = document.getElementById('roomNameInput').value;
@@ -55,7 +61,7 @@ submitBtn.onclick = function() {
 	const roomList = document.getElementById('roomList');
 
 	let roomItem = ''
-	roomItem += '<div class="room-item" id="roomItem">'
+	roomItem += '<div class="room-item" data-room="' + roomName + '">'
 	roomItem += '   <div class="room-info" id="roomInfo">'
 	roomItem += '       <h3>' + roomName + '</h3>'
 	roomItem += '   </div>'
@@ -65,7 +71,7 @@ submitBtn.onclick = function() {
 	roomItem += '</div>'
 
 	roomList.innerHTML += roomItem;
-	
+
 	data = {}
 	data.roomName = roomName;
 	data.name = sessionStorage.getItem('username');
@@ -73,7 +79,9 @@ submitBtn.onclick = function() {
 		console.log(response);
 	});
 
-	document.getElementById("roomItem").addEventListener("click", function() {
-		window.location.href = '/webview/chat/rooms?roomName=' + roomName;
+	document.querySelectorAll(".room-item").forEach(room => {
+		room.addEventListener("click", function() {
+			window.location.href = '/webview/chat/rooms?roomName=' + roomName;
+		});
 	});
 }

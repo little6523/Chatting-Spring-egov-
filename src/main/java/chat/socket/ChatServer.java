@@ -1,6 +1,7 @@
 package chat.socket;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +54,7 @@ public class ChatServer {
             String roomName = (String) message.get("roomName");
             Room room = chattingRoomManager.getChattingRoom(roomName);
 
-            if (message.containsKey("name")) {	
+            if (message.containsKey("name")) {
                 List<User> users = chattingRoomManager.newClient(message, roomName, session);
                 Map<String, Object> participants = new HashMap<>();
                 participants.put("users", users);
