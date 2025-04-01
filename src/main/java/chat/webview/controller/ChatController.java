@@ -1,5 +1,8 @@
 package chat.webview.controller;
 
+import java.util.List;
+import java.util.Map;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
@@ -30,7 +33,9 @@ public class ChatController {
 	}
 	
 	@GetMapping("/chat")
-	public String chatRoom() {
+	public String chatRoom(Model model) {
+	    List<Map<String, Object>> rooms = chatService.getChattingRooms();
+	    model.addAttribute("rooms", rooms);
 		return "roomlist";
 	}
 	
