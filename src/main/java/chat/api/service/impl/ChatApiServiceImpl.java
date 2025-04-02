@@ -45,6 +45,10 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
 		String name = (String) body.get("roomName");
 		String manager = (String) body.get("name");
 		
+		if(chattingRoomManager.getChattingRoom(name) != null) {
+			return 0;
+		}
+		
 		Map<String, Object> param = new HashMap<>();
 		param.put("name", name);
 		param.put("manager", manager);

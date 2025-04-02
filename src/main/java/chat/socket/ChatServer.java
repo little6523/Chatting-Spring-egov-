@@ -19,7 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import annotation.chat;
+import chat.annotation.chat;
 import chat.socket.config.ChatServerConfig;
 
 @ServerEndpoint(value = "/chat/{roomName}", configurator = ChatServerConfig.class)

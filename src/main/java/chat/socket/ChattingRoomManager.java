@@ -10,7 +10,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.websocket.Session;
 
-import annotation.chat;
+import chat.annotation.chat;
 import chat.webview.mapper.ChatMapper;
 
 @chat
