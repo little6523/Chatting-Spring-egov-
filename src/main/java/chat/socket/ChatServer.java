@@ -1,7 +1,6 @@
 package chat.socket;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import annotation.chat;
+import chat.annotation.chat;
+import chat.log.ChattingFileManager;
 import chat.socket.config.ChatServerConfig;
 
 @ServerEndpoint(value = "/chat/{roomName}", configurator = ChatServerConfig.class)
@@ -28,6 +28,9 @@ public class ChatServer {
 	
 	@Autowired
 	private ChattingRoomManager chattingRoomManager;
+	
+	@Autowired
+	private ChattingFileManager chattingFileManager;
 
     @OnOpen
     public void onOpen(@PathParam("roomName") String roomName, Session session) throws IOException {
@@ -63,9 +66,11 @@ public class ChatServer {
             }
 
             if (message.containsKey("message")) {
+            	message.put("name", message.get("userName"));
+            	chattingFileManager.setFilePath(roomName);
+            	chattingFileManager.saveChatting(message.get("userName") + ": " + message.get("message"));
                 for (User user : room.getParticipatns()) {
                     if (user.getSession() != session) {
-                    	message.put("name", user.getName());
                         sendMessage(user.getSession(), message);
                     }
                 }
@@ -73,7 +78,10 @@ public class ChatServer {
             }
             
             if (message.containsKey("close")) {
-            	chattingRoomManager.removeUser(session, roomName);
+            	List<User> users = chattingRoomManager.removeUser(session, roomName);
+                Map<String, Object> participants = new HashMap<>();
+                participants.put("users", users);
+                sendToAll(users, participants);
             }
         } catch (Exception e) {
             e.printStackTrace();

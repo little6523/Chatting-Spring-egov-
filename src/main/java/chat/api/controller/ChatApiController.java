@@ -22,13 +22,6 @@ public class ChatApiController {
 
 	@Resource(name = "ChatApiService")
 	private ChatApiService chatApiService;
-
-	@GetMapping("/test")
-	public ResponseEntity<Map<String, Object>> hello() {
-		HttpHeaders headers = new HttpHeaders();
-		Map<String, Object> reuslt = chatApiService.test();
-		return ResponseEntity.ok().headers(headers).body(reuslt);
-	}
 	
 	@PostMapping("/login")
 	public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, Object> body) {
@@ -52,6 +45,13 @@ public class ChatApiController {
 		int roomNumber = chatApiService.createRoom(body);
 		HttpHeaders headers = new HttpHeaders();
 		Map<String, Object> result = new HashMap<>();
+		
+		if (roomNumber == 0) {
+			result.put("rspCode", "1");
+			result.put("error", "같은 이름의 방이 이미 존재합니다.");
+			return ResponseEntity.ok().headers(headers).body(result);
+		}
+		
 		result.put("rspCode", "1");
 		result.put("roomNumber", roomNumber);
 		
