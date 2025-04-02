@@ -63,9 +63,9 @@ public class ChatServer {
             }
 
             if (message.containsKey("message")) {
+            	message.put("name", message.get("userName"));
                 for (User user : room.getParticipatns()) {
                     if (user.getSession() != session) {
-                    	message.put("name", user.getName());
                         sendMessage(user.getSession(), message);
                     }
                 }

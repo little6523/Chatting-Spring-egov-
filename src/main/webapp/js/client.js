@@ -67,6 +67,7 @@ SOCKET.init(
 
 function sendMessage() {
 	data = {};
+	data.userName = USER.name;
 	data.roomName = roomName;
 	data.message = document.getElementById("messageInput").value;  // 입력된 메시지 가져오기
 	SOCKET.socket.send(JSON.stringify(data));  // 메시지 전송
