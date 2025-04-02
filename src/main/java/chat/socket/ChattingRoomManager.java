@@ -59,8 +59,7 @@ public class ChattingRoomManager {
     }
     
     // 연결 종료된 클라이언트가 있는 경우
-    public Map<String, Object> removeUser(Session session, String roomName) {
-        Map<String, Object> participation = new HashMap<>();
+    public List<User> removeUser(Session session, String roomName) {
         List<String> userNames = new ArrayList<>();
         List<User> users = rooms.get(roomName).getParticipatns();
         Iterator<User> iterator = users.iterator();
@@ -72,8 +71,6 @@ public class ChattingRoomManager {
             }
             iterator.remove();
         }
-        participation.put("userNumber", users.size());
-        participation.put("userNames", userNames);
-        return participation;
+        return users;
     }
 }

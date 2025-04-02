@@ -8,12 +8,30 @@ const roomName = USER.roomName;
 
 SOCKET.connect(document.getElementById('roomName').innerText);
 
+document.getElementById('leaveButton').addEventListener('click', function() {
+    if (confirm('정말로 채팅방을 나가시겠습니까?')) {
+		
+		data = {}
+		data.close = true;
+		data.roomName = roomName;
+		data.user = USER;
+		SOCKET.socket.send(JSON.stringify(data));
+		
+        // 웹소켓 연결 종료
+        SOCKET.socket.close();
+        // 메인 페이지로 리다이렉트
+        window.location.href = '/webview/chat';
+    }
+});
+
 SOCKET.init(
+	// onopen
 	() => {
 		console.log("WebSocket 연결 성공");
 		SOCKET.socket.send(JSON.stringify(USER));
 	},
 	
+	// onmessage
 	(event) => {
 		const json = JSON.parse(event.data);
 		if (json.hasOwnProperty("users")) {
@@ -40,12 +58,9 @@ SOCKET.init(
 		}
 	},
 	
+	// onclose
 	() => {
-		data = {}
-		data.close = true;
-		data.roomName = roomName;
-		data.user = USER;
-		SOCKET.socket.send(JSON.stringify(data));
+
 	}
 	
 	)
@@ -61,20 +76,3 @@ function sendMessage() {
 	let chatMessages = document.getElementById("chatMessages");
 	chatMessages.innerHTML += selfMessage;
 }
-
-/*function connectWebSocket() {
-	const modal = document.getElementById('nicknameModal');
-	const nicknameInput = document.getElementById('nicknameInput');
-
-	const nickname = nicknameInput.value.trim();
-	if (nickname) {
-		// 닉네임을 저장하고 모달 닫기
-		USER.name = nickname;
-		document.getElementById('username').textContent = nickname;
-		modal.style.display = 'none';
-	} else {
-		alert('닉네임을 입력해주세요!');
-	}
-
-	SOCKET.socket.send(JSON.stringify(USER));
-}*/

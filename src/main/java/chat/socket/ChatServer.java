@@ -73,7 +73,10 @@ public class ChatServer {
             }
             
             if (message.containsKey("close")) {
-            	chattingRoomManager.removeUser(session, roomName);
+            	List<User> users = chattingRoomManager.removeUser(session, roomName);
+                Map<String, Object> participants = new HashMap<>();
+                participants.put("users", users);
+                sendToAll(users, participants);
             }
         } catch (Exception e) {
             e.printStackTrace();
