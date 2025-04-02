@@ -1,7 +1,6 @@
 package chat.socket;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import chat.annotation.chat;
+import chat.log.ChattingFileManager;
 import chat.socket.config.ChatServerConfig;
 
 @ServerEndpoint(value = "/chat/{roomName}", configurator = ChatServerConfig.class)
@@ -28,6 +28,9 @@ public class ChatServer {
 	
 	@Autowired
 	private ChattingRoomManager chattingRoomManager;
+	
+	@Autowired
+	private ChattingFileManager chattingFileManager;
 
     @OnOpen
     public void onOpen(@PathParam("roomName") String roomName, Session session) throws IOException {
@@ -64,6 +67,8 @@ public class ChatServer {
 
             if (message.containsKey("message")) {
             	message.put("name", message.get("userName"));
+            	chattingFileManager.setFilePath(roomName);
+            	chattingFileManager.saveChatting(message.get("userName") + ": " + message.get("message"));
                 for (User user : room.getParticipatns()) {
                     if (user.getSession() != session) {
                         sendMessage(user.getSession(), message);
