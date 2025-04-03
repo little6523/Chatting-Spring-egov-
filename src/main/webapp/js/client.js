@@ -51,18 +51,27 @@ SOCKET.init(
 		}
 
 		if (json.hasOwnProperty("name") && json.hasOwnProperty("message")) {
+			let chatMessages = document.getElementById("chatMessages");
+			let message = "";
+			let profile = "<div class='mini-profile'>";
+			profile += "<img src='http://localhost:8081/api/profileImages/" + json.name + "' alt='프로필' class='profile-img'>";
+			profile += "<span class='username' id='username'>" + json.name + "</span>";
+			profile += "</div>"
 			if (json.name == USER.name) {
-				let selfMessage = "<div class='message sent'>" + '나: ' + json.message + "</div>";
-				let chatMessages = document.getElementById("chatMessages");
-				chatMessages.innerHTML += selfMessage;
+				message += "<div class='messageBox sent'>";
+				message += profile;
+				let selfMessage = "<div class='message sent'>" + json.message + "</div>";
+				message += selfMessage;
 			} else {
-				const chatMessages = document.getElementById("chatMessages");
-				let newMessage = "<div class='message received'>" + json.name + ": " + json.message + "</div>";
-				chatMessages.innerHTML += newMessage;
-				return;
+				message += "<div class='messageBox received'>";
+				message += profile;
+				let newMessage = "<div class='message received'>" + json.message + "</div>";
+				message += newMessage;
 			}
+			message += "</div>"
+			chatMessages.innerHTML += message;
 		}
-	},
+	}
 )
 
 function sendMessage() {
@@ -73,7 +82,21 @@ function sendMessage() {
 	SOCKET.socket.send(JSON.stringify(data));  // 메시지 전송
 	document.getElementById("messageInput").value = "";  // 입력창 초기화
 
-	let selfMessage = "<div class='message sent'>" + '나: ' + data.message + "</div>";
+	let message = "<div class='messageBox sent'>"
+	let profile = "<div class='mini-profile'>";
+	profile += "<img src='http://localhost:8081/api/profileImages/" + data.userName + "' alt='프로필' class='profile-img'>";
+	profile += "<span class='username' id='username'>" + data.userName + "</span>";
+	profile += "</div>"
+	message += profile;
+	let selfMessage = "<div class='message sent'>" + data.message + "</div>";
+	message += selfMessage;
+	message += "</div>"
 	let chatMessages = document.getElementById("chatMessages");
-	chatMessages.innerHTML += selfMessage;
+	chatMessages.innerHTML += message;
 }
+
+/*function getProfileImage() {
+	common.sendAjax('post', '/api/profileImages', USER, function(response, xhr) {
+		return response.imageUri;
+	})
+}*/
