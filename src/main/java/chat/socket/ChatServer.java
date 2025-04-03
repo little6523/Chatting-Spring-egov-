@@ -1,6 +1,8 @@
 package chat.socket;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +44,25 @@ public class ChatServer {
         Map<String, Object> map = new HashMap<>();
         map.put("name", "서버");
         map.put("message", "서버에 연결되었습니다!");
+        
         sendMessage(session, map);
+        
+        String oldChatting = chattingFileManager.readChatting(roomName);
+        if (oldChatting == null || oldChatting.equals("")) {
+        	return;
+        }
+        
+        try (BufferedReader reader = new BufferedReader(new StringReader(oldChatting))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+            	String arr[] = line.split(":");
+                map.put("name", arr[0]);
+                map.put("message", arr[1]);
+                sendMessage(session, map);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @OnClose
@@ -67,8 +87,7 @@ public class ChatServer {
 
             if (message.containsKey("message")) {
             	message.put("name", message.get("userName"));
-            	chattingFileManager.setFilePath(roomName);
-            	chattingFileManager.saveChatting(message.get("userName") + ": " + message.get("message"));
+            	chattingFileManager.saveChatting(roomName, message.get("userName") + ":" + message.get("message"));
                 for (User user : room.getParticipatns()) {
                     if (user.getSession() != session) {
                         sendMessage(user.getSession(), message);

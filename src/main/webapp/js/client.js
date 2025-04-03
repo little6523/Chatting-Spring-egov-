@@ -9,19 +9,19 @@ const roomName = USER.roomName;
 SOCKET.connect(document.getElementById('roomName').innerText);
 
 document.getElementById('leaveButton').addEventListener('click', function() {
-    if (confirm('정말로 채팅방을 나가시겠습니까?')) {
-		
+	if (confirm('정말로 채팅방을 나가시겠습니까?')) {
+
 		data = {}
 		data.close = true;
 		data.roomName = roomName;
 		data.user = USER;
 		SOCKET.socket.send(JSON.stringify(data));
-		
-        // 웹소켓 연결 종료
-        SOCKET.socket.close();
-        // 메인 페이지로 리다이렉트
-        window.location.href = '/webview/chat';
-    }
+
+		// 웹소켓 연결 종료
+		SOCKET.socket.close();
+		// 메인 페이지로 리다이렉트
+		window.location.href = '/webview/chat';
+	}
 });
 
 SOCKET.init(
@@ -30,7 +30,7 @@ SOCKET.init(
 		console.log("WebSocket 연결 성공");
 		SOCKET.socket.send(JSON.stringify(USER));
 	},
-	
+
 	// onmessage
 	(event) => {
 		const json = JSON.parse(event.data);
@@ -51,19 +51,19 @@ SOCKET.init(
 		}
 
 		if (json.hasOwnProperty("name") && json.hasOwnProperty("message")) {
-			const chatMessages = document.getElementById("chatMessages");
-			let newMessage = "<div class='message received'>" + json.name + ": " + json.message + "</div>";
-			chatMessages.innerHTML += newMessage;
-			return;
+			if (json.name == USER.name) {
+				let selfMessage = "<div class='message sent'>" + '나: ' + json.message + "</div>";
+				let chatMessages = document.getElementById("chatMessages");
+				chatMessages.innerHTML += selfMessage;
+			} else {
+				const chatMessages = document.getElementById("chatMessages");
+				let newMessage = "<div class='message received'>" + json.name + ": " + json.message + "</div>";
+				chatMessages.innerHTML += newMessage;
+				return;
+			}
 		}
 	},
-	
-	// onclose
-	() => {
-
-	}
-	
-	)
+)
 
 function sendMessage() {
 	data = {};
