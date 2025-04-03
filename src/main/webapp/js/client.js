@@ -9,19 +9,19 @@ const roomName = USER.roomName;
 SOCKET.connect(document.getElementById('roomName').innerText);
 
 document.getElementById('leaveButton').addEventListener('click', function() {
-    if (confirm('정말로 채팅방을 나가시겠습니까?')) {
-		
+	if (confirm('정말로 채팅방을 나가시겠습니까?')) {
+
 		data = {}
 		data.close = true;
 		data.roomName = roomName;
 		data.user = USER;
 		SOCKET.socket.send(JSON.stringify(data));
-		
-        // 웹소켓 연결 종료
-        SOCKET.socket.close();
-        // 메인 페이지로 리다이렉트
-        window.location.href = '/webview/chat';
-    }
+
+		// 웹소켓 연결 종료
+		SOCKET.socket.close();
+		// 메인 페이지로 리다이렉트
+		window.location.href = '/webview/chat';
+	}
 });
 
 SOCKET.init(
@@ -30,7 +30,7 @@ SOCKET.init(
 		console.log("WebSocket 연결 성공");
 		SOCKET.socket.send(JSON.stringify(USER));
 	},
-	
+
 	// onmessage
 	(event) => {
 		const json = JSON.parse(event.data);
@@ -51,19 +51,28 @@ SOCKET.init(
 		}
 
 		if (json.hasOwnProperty("name") && json.hasOwnProperty("message")) {
-			const chatMessages = document.getElementById("chatMessages");
-			let newMessage = "<div class='message received'>" + json.name + ": " + json.message + "</div>";
-			chatMessages.innerHTML += newMessage;
-			return;
+			let chatMessages = document.getElementById("chatMessages");
+			let message = "";
+			let profile = "<div class='mini-profile'>";
+			profile += "<img src='http://localhost:8081/api/profileImages/" + json.name + "' alt='프로필' class='profile-img'>";
+			profile += "<span class='username' id='username'>" + json.name + "</span>";
+			profile += "</div>"
+			if (json.name == USER.name) {
+				message += "<div class='messageBox sent'>";
+				message += profile;
+				let selfMessage = "<div class='message sent'>" + json.message + "</div>";
+				message += selfMessage;
+			} else {
+				message += "<div class='messageBox received'>";
+				message += profile;
+				let newMessage = "<div class='message received'>" + json.message + "</div>";
+				message += newMessage;
+			}
+			message += "</div>"
+			chatMessages.innerHTML += message;
 		}
-	},
-	
-	// onclose
-	() => {
-
 	}
-	
-	)
+)
 
 function sendMessage() {
 	data = {};
@@ -73,7 +82,21 @@ function sendMessage() {
 	SOCKET.socket.send(JSON.stringify(data));  // 메시지 전송
 	document.getElementById("messageInput").value = "";  // 입력창 초기화
 
-	let selfMessage = "<div class='message sent'>" + '나: ' + data.message + "</div>";
+	let message = "<div class='messageBox sent'>"
+	let profile = "<div class='mini-profile'>";
+	profile += "<img src='http://localhost:8081/api/profileImages/" + data.userName + "' alt='프로필' class='profile-img'>";
+	profile += "<span class='username' id='username'>" + data.userName + "</span>";
+	profile += "</div>"
+	message += profile;
+	let selfMessage = "<div class='message sent'>" + data.message + "</div>";
+	message += selfMessage;
+	message += "</div>"
 	let chatMessages = document.getElementById("chatMessages");
-	chatMessages.innerHTML += selfMessage;
+	chatMessages.innerHTML += message;
 }
+
+/*function getProfileImage() {
+	common.sendAjax('post', '/api/profileImages', USER, function(response, xhr) {
+		return response.imageUri;
+	})
+}*/

@@ -2,6 +2,7 @@ package chat.log;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,38 +14,53 @@ import chat.annotation.chat;
 @chat
 public class ChattingFileManager {
 	
-	private Path path = Paths.get("C:/ChattingLog/log.txt");
-	
-	public void setFilePath(String roomName) {
-		this.path = Paths.get("C:/ChattingLog/" + roomName + ".txt");
+	public String readChatting(String roomName) {
+		return read(roomName);
 	}
 	
-	public void saveChatting(String data) {
-		write(data + "\n");
+	public void saveChatting(String roomName, String data) {
+		write(roomName, data + "\n");
 	}
 	
     // 파일 읽기
-	private String read() {
+	private String read(String roomName) {
         StringBuilder sb = new StringBuilder();
-        try (BufferedReader reader = Files.newBufferedReader(path)) {
-            String line;
+        String pathString = "C:/ChattingLog/" + roomName + ".txt";
+        
+        if(isExistFile(pathString)) {
+        	Path path = Paths.get(pathString);
+            try (BufferedReader reader = Files.newBufferedReader(path)) {
+                String line;
 
-            while ((line = reader.readLine()) != null) {
-                sb.append(line);
+                while ((line = reader.readLine()) != null) {
+                    sb.append(line + "\n");
+                }
+                return sb.toString();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         
-        return sb.toString();
+        return null;
 	}
 	
     // 파일 쓰기
-	private void write(String data) {
+	private void write(String roomName, String data) {
+		Path path = Paths.get("C:/ChattingLog/" + roomName + ".txt");
         try (BufferedWriter writer = Files.newBufferedWriter(path, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
             writer.write(data);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+	}
+	
+	private boolean isExistFile(String filePath) {
+        File file = new File(filePath);
+        
+        if (file.exists()) {
+            return true;
+        } else {
+            return false;
         }
 	}
 }

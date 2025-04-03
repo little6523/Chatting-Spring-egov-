@@ -9,51 +9,6 @@ body {
     background-color: #f5f5f5;
 }
 
-.modal {
-    display: block;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-.modal-content {
-    background-color: white;
-    margin: 15% auto;
-    padding: 20px;
-    border-radius: 5px;
-    width: 300px;
-    text-align: center;
-}
-
-.modal-content h2 {
-    margin-bottom: 20px;
-}
-
-.modal-content input {
-    width: 80%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-
-.modal-content button {
-    padding: 10px 20px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.modal-content button:hover {
-    background-color: #45a049;
-}
-
 .container {
     display: flex;
     height: 100vh;
@@ -140,11 +95,32 @@ body {
     overflow-y: auto;
 }
 
+.messageBox {
+	width: 100%;
+	margin-bottom: 20px;
+}
+
+.mini-profile {
+	height: 30px;
+	margin-bottom: 5px;
+}
+
+.messageBox.received {
+	display: flex;
+	flex-direction: column;
+}
+
+.messageBox.sent {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+}
+
 .message {
-    margin-bottom: 15px;
     padding: 10px;
     border-radius: 10px;
-    max-width: 70%;
+    max-width: 47%;
+    word-break: break-all
 }
 
 .message.received {

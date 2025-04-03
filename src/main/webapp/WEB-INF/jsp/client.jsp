@@ -50,5 +50,6 @@
 	</div>
 	<script src="/js/socket.js"></script>
 	<script src="/js/client.js"></script>
+	<script src="/js/ajax.js"></script>
 </body>
 </html>
