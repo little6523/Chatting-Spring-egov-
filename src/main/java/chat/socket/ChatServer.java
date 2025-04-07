@@ -42,8 +42,7 @@ public class ChatServer {
 
         // 클라이언트가 연결되었을 때 메시지 전송
         Map<String, Object> map = new HashMap<>();
-        map.put("name", "서버");
-        map.put("message", "서버에 연결되었습니다!");
+        map.put("message", "서버:서버에 연결되었습니다!");
         
         sendMessage(session, map);
         
@@ -52,17 +51,8 @@ public class ChatServer {
         	return;
         }
         
-        try (BufferedReader reader = new BufferedReader(new StringReader(oldChatting))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-            	String arr[] = line.split(":");
-                map.put("name", arr[0]);
-                map.put("message", arr[1]);
-                sendMessage(session, map);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        map.put("message", oldChatting);
+        sendMessage(session, map);
     }
 
     @OnClose
@@ -86,8 +76,7 @@ public class ChatServer {
             }
 
             if (message.containsKey("message")) {
-            	message.put("name", message.get("userName"));
-            	chattingFileManager.saveChatting(roomName, message.get("userName") + ":" + message.get("message"));
+            	chattingFileManager.saveChatting(roomName, (String) message.get("message"));
                 for (User user : room.getParticipatns()) {
                     if (user.getSession() != session) {
                         sendMessage(user.getSession(), message);
