@@ -14,8 +14,8 @@
 		<!-- 사이드바 - 참가자 목록 -->
 		<div class="sidebar">
 			<div class="user-profile">
-				<img src="default-avatar.png" alt="프로필" class="profile-img"> <span
-					class="username" id="username">사용자 이름</span>
+				<img src="" id="profileImage" alt="프로필" class="profile-img">
+				<span class="username" id="username">사용자 이름</span>
 			</div>
 			<button id="leaveButton" class="leave-button">나가기</button>
 			<h3>참가자 목록</h3>

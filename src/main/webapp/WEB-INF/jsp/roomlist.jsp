@@ -14,8 +14,8 @@
 		<!-- 사이드바 - 사용자 프로필 -->
 		<div class="sidebar">
 			<div class="user-profile">
-				<img src="default-avatar.png" alt="프로필" class="profile-img"> <span
-					class="username" id="username">사용자 이름</span>
+				<img src="" id="profileImage" alt="프로필" class="profile-img">
+				<span class="username" id="username">사용자 이름</span>
 			</div>
 		</div>
 

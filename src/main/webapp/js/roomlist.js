@@ -27,20 +27,30 @@ window.onclick = function(event) {
 	}
 }
 
-document.getElementById('username').innerText = sessionStorage.getItem('username');
+$(document).ready(function() {
+	const name = sessionStorage.getItem('username');
+	data = {}
+	data.name = name;
+	
+	document.getElementById('username').innerText = name;
 
-document.querySelectorAll(".room-item").forEach(room => {
-	room.addEventListener("click", function() {
-		window.location.href = '/webview/chat/rooms?roomName=' + $(this).attr("data-room");
+	common.sendAjax('post', '/api/profileImages', data, function(response, xhr) {
+		document.getElementById("profileImage").src = "data:image/png;base64," + response.image;
 	});
-});
+
+	document.querySelectorAll(".room-item").forEach(room => {
+		room.addEventListener("click", function() {
+			window.location.href = '/webview/chat/rooms?roomName=' + $(this).attr("data-room");
+		});
+	});
+})
 
 // 채팅방 생성 제출
 submitBtn.onclick = function() {
 	const roomName = document.getElementById('roomNameInput').value;
 
 	if (!roomName) {
-		alert('채팅방 이름과 포트 번호를 모두 입력해주세요.');
+		alert('채팅방 이름을 입력해주세요.');
 		return;
 	}
 
