@@ -11,7 +11,7 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     });
     
     data = {}
-    data.name = userId;
+    data.id = userId;
     data.password = userPassword;
     common.sendAjax('post', '/api/login', data, function(response, xhr) {
 		// 로그인 성공 시 채팅방 목록 페이지로 이동

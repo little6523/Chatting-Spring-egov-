@@ -1,8 +1,6 @@
 package chat.socket;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,24 +37,17 @@ public class ChatServer {
         String clientAddress = session.getRequestURI().getHost();
         int clientPort = session.getRequestURI().getPort();
         System.out.println("새 클라이언트 연결됨: " + clientAddress + ":" + clientPort);
-
-        // 클라이언트가 연결되었을 때 메시지 전송
-        Map<String, Object> map = new HashMap<>();
-        map.put("message", "서버:서버에 연결되었습니다!");
         
-        sendMessage(session, map);
-        
-        String oldChatting = chattingFileManager.readChatting(roomName);
-        if (oldChatting == null || oldChatting.equals("")) {
-        	return;
-        }
-        
-        map.put("message", oldChatting);
-        sendMessage(session, map);
+        session.getUserProperties().put("roomName", roomName);
     }
 
     @OnClose
     public void onClose(Session session) throws IOException {
+    	String roomName = (String) session.getUserProperties().get("roomName");
+		List<User> users = chattingRoomManager.removeUser(session, roomName);
+		Map<String, Object> participants = new HashMap<>();
+		participants.put("users", users);
+		sendToAll(users, participants);
         System.out.println("클라이언트 연결 종료: " + session.getId());
     }
 
@@ -72,6 +63,18 @@ public class ChatServer {
                 Map<String, Object> participants = new HashMap<>();
                 participants.put("users", users);
                 sendToAll(users, participants);
+                
+                // 클라이언트가 연결되었을 때 메시지 전송
+                Map<String, Object> map = new HashMap<>();
+                
+                String oldChatting = chattingFileManager.readChatting(roomName);
+                if (oldChatting == null || oldChatting.equals("")) {
+                	return;
+                }
+                
+                map.put("message", oldChatting);
+                sendMessage(session, map);
+                
                 return;
             }
 
@@ -84,20 +87,10 @@ public class ChatServer {
                 }
                 return;
             }
-            
-            if (message.containsKey("close")) {
-            	List<User> users = chattingRoomManager.removeUser(session, roomName);
-                Map<String, Object> participants = new HashMap<>();
-                participants.put("users", users);
-                sendToAll(users, participants);
-            }
         } catch (Exception e) {
             e.printStackTrace();
-            try {
-                session.getBasicRemote().sendText("잘못된 형식의 메시지입니다.");
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            Map<String, Object> message = new HashMap<>();
+			message.put("message", "잘못된 형식의 메시지입니다.");
         }
     }
 
