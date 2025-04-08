@@ -35,11 +35,12 @@ $(document).ready(function() {
 	document.getElementById('username').innerText = name;
 
 	common.sendAjax('post', '/api/profileImages', data, function(response, xhr) {
-		document.getElementById("profileImage").src = "data:image/png;base64," + response.image;
+		document.getElementById("profileImage").src = "data:image/jpg;base64," + response.image;
 	});
 
 	document.querySelectorAll(".room-item").forEach(room => {
 		room.addEventListener("click", function() {
+			sessionStorage.setItem('roomname', $(this).attr("data-room"));
 			window.location.href = '/webview/chat/rooms?roomName=' + $(this).attr("data-room");
 		});
 	});
@@ -86,15 +87,14 @@ submitBtn.onclick = function() {
 			roomItem += '</div>'
 
 			roomList.innerHTML += roomItem;
+			
+			const element = document.querySelector('[data-room="' + roomName + '"]');
+			element.addEventListener("click", function() {
+				window.location.href = '/webview/chat/rooms?roomName=' + roomName;
+			});
 		} else {
 			alert("입력하신 이름의 채팅방이 이미 존재합니다.");
 		}
 		console.log(response);
-	});
-
-	document.querySelectorAll(".room-item").forEach(room => {
-		room.addEventListener("click", function() {
-			window.location.href = '/webview/chat/rooms?roomName=' + roomName;
-		});
 	});
 }

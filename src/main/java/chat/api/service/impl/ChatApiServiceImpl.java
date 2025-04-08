@@ -43,7 +43,7 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
 	@Override
 	public int createRoom(Map<String, Object> body) {
 		String name = (String) body.get("roomName");
-		String manager = (String) body.get("name");
+		String userId = (String) body.get("name");
 		
 		if(chattingRoomManager.getChattingRoom(name) != null) {
 			return 0;
@@ -51,10 +51,10 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
 		
 		Map<String, Object> param = new HashMap<>();
 		param.put("name", name);
-		param.put("manager", manager);
+		param.put("manager", userId);
 		chatApiMapper.createRoom(param);
 		
-        Room room = new Room(name, manager);
+        Room room = new Room(name, userId);
         int size = chattingRoomManager.createRoom(name, room);
 
         return size;
