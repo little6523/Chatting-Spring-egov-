@@ -36,6 +36,7 @@ $(document).ready(function() {
 
 	common.sendAjax('post', '/api/profileImages', data, function(response, xhr) {
 		document.getElementById("profileImage").src = "data:image/jpg;base64," + response.image;
+		sessionStorage.setItem('profileImage', response.image);
 	});
 
 	document.querySelectorAll(".room-item").forEach(room => {

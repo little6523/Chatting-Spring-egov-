@@ -44,10 +44,11 @@ public class ChatServer {
     @OnClose
     public void onClose(Session session) throws IOException {
     	String roomName = (String) session.getUserProperties().get("roomName");
-		List<User> users = chattingRoomManager.removeUser(session, roomName);
-		Map<String, Object> participants = new HashMap<>();
-		participants.put("users", users);
-		sendToAll(users, participants);
+		User user = chattingRoomManager.removeUser(session, roomName);
+		Map<String, Object> outUser = new HashMap<>();
+		outUser.put("outUser", user);
+		List<User> users = chattingRoomManager.getChattingRoom(roomName).getParticipatns();
+		sendToAll(users, outUser);
         System.out.println("클라이언트 연결 종료: " + session.getId());
     }
 
@@ -56,13 +57,16 @@ public class ChatServer {
         try {
             Map<String, Object> message = jsonToMap(data);
             String roomName = (String) message.get("roomName");
-            Room room = chattingRoomManager.getChattingRoom(roomName);
 
             if (message.containsKey("name")) {
                 User user = chattingRoomManager.newClient(message, roomName, session);
+                List<User> users = chattingRoomManager.getChattingRoom(roomName).getParticipatns();
+                Map<String, Object> participants = new HashMap<>();
+                participants.put("participants", users);
+                sendToOne(session, participants);
+                
                 Map<String, Object> newUser = new HashMap<>();
                 newUser.put("newUser", user);
-                List<User> users = chattingRoomManager.getChattingRoom(roomName).getParticipatns();
                 sendToAllExpectMe(users, session, newUser);
                 
                 // 클라이언트가 연결되었을 때 메시지 전송
@@ -73,20 +77,16 @@ public class ChatServer {
                 	return;
                 }
                 
-                map.put("type", "init");
                 map.put("message", oldChatting);
-                sendMessage(session, map);
+                sendToOne(session, map);
                 
                 return;
             }
 
             if (message.containsKey("message")) {
             	chattingFileManager.saveChatting(roomName, (String) message.get("message"));
-                for (User user : room.getParticipatns()) {
-                    if (user.getSession() != session) {
-                        sendMessage(user.getSession(), message);
-                    }
-                }
+            	List<User> users = chattingRoomManager.getChattingRoom(roomName).getParticipatns();
+            	sendToAllExpectMe(users, session, message);
                 return;
             }
         } catch (Exception e) {
@@ -102,7 +102,7 @@ public class ChatServer {
     }
 
     // 특정 유저에게 메시지 전송
-    private void sendMessage(Session session, Map<String, Object> message) throws IOException {
+    private void sendToOne(Session session, Map<String, Object> message) throws IOException {
         String jsonMessage = mapToJson(message);
         session.getBasicRemote().sendText(jsonMessage);
     }
@@ -111,7 +111,7 @@ public class ChatServer {
         for (User user : users) {
         	if (user.getSession() == session) continue;
             try {
-                sendMessage(user.getSession(), message);
+                sendToOne(user.getSession(), message);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -122,7 +122,7 @@ public class ChatServer {
     private void sendToAll(List<User> users, Map<String, Object> message) {
         for (User user : users) {
             try {
-                sendMessage(user.getSession(), message);
+                sendToOne(user.getSession(), message);
             } catch (IOException e) {
                 e.printStackTrace();
             }

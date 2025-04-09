@@ -9,72 +9,93 @@ window.addEventListener('beforeunload', (event) => {
 const USER = {
 	name: sessionStorage.getItem('username'),
 	roomName: document.getElementById('roomName').innerText,
-	users: [],
-	profileImage: {}
 }
 
-// 서버로부터 같은 채팅방의 유저들의 프로필 이미지를 받는 메소드
-/*function fetchProfileImage() {
-	return new Promise((resolve, reject) => {
-		const promises = USER.users.map((user) => {
-			return new Promise((res, rej) => {
-				if (USER.profileImage[user.name] == null) {
-					const data = { name: user.name };
-					common.sendAjax('post', '/api/profileImages', data, (response, xhr) => {
-						if (USER.profileImage[user.name] != response.image) {
-							USER.profileImage[user.name] = response.image;
-						}
-						res(); // 이 사용자 이미지 처리가 끝나면 resolve
-					});
-				} else {
-					res(); // 이미 이미지가 있으면 바로 resolve
-				}
-			});
-		});
-
-		Promise.all(promises)
-			.then(() => resolve())  // 모든 사용자 이미지 처리가 끝나면 최종 resolve
-			.catch(err => reject(err));
-	});
-}*/
+const ROOM_INFO = {
+	roomName: document.getElementById('roomName').innerText,
+	users: [],
+	profileImages: {}
+}
 
 function fetchProfileImage(username) {
 	return new Promise((resolve, reject) => {
 		const data = { name: username };
 		common.sendAjax('post', '/api/profileImages', data, (response, xhr) => {
-			if (USER.profileImage[username] != response.image) {
-				USER.profileImage[username] = response.image;
+			if (!ROOM_INFO.profileImages.hasOwnProperty(username) || ROOM_INFO.profileImages[username] != response.image) {
+				ROOM_INFO.profileImages[username] = response.image;
 			}
 			resolve(username); // 이 사용자 이미지 처리가 끝나면 resolve
 		});
 	})
 }
 
-function updateParticipants(username) {
-	USER.users.push(username);
-	document.getElementById("userNumber").textContent = USER.users.length;
+function updateParticipants(username, type) {
 	const participantsList = document.getElementById("participantsList");
+	if (type == 'in') {
+		ROOM_INFO.users.push(username);
 
-	let userList = "";
+		// 채팅 참가자 목록 업데이트
+		let userList = "";
 
-	// 채팅 참가자 프로필 이미지 업데이트
-	fetchProfileImage(username)
-		.then((username) => {
-			console.log(username);
-			document.getElementById('profileImage').src = "data:image/jpg;base64," + USER.profileImage[username];
-		})
+		if (username == USER.name) {
+			userList = "<li class='participant'> 나: " + username + "</li>";
+		} else {
+			userList = "<li>" + username + "</li>";
+		}
+		participantsList.innerHTML += userList;
 
-	// 채팅 참가자 목록 업데이트
-	if (username == USER.name) {
-		userList = "<li class='participant'> 나: " + username + "</li>";
-	} else {
-		userList = "<li>" + username + "</li>";
+		// 채팅 참가자 프로필 이미지 업데이트
+		if (USER.name != username) {
+			fetchProfileImage(username)
+				.then((username) => {
+					console.log(username);
+				})
+		}
 	}
-	participantsList.innerHTML += userList;
+
+	if (type == 'out') {
+		ROOM_INFO.users = ROOM_INFO.users.filter(user => user != username);
+
+		const participants = participantsList.querySelectorAll('li');
+
+		participants.forEach(participant => {
+			if (participant.textContent.includes(username)) {
+				participantsList.removeChild(participant);
+			}
+		});
+	}
+
+	document.getElementById("userNumber").textContent = ROOM_INFO.users.length;
 }
 
+function makeChatbox(username, chat) {
+	/*	let chatMessages = document.getElementById("chatMessages");*/
+	let message = "";
+
+	let profile = "<div class='mini-profile'>";
+	profile += "<img src='data:image/jpg;base64," + ROOM_INFO.profileImages[username] + "' alt='프로필' class='profile-img'>";
+	profile += "<span class='username' id='username'>" + username + "</span>";
+	profile += "</div>"
+
+	if (username == USER.name) {
+		message += "<div class='messageBox sent'>";
+		message += profile;
+		let selfMessage = "<div class='message sent'>" + chat + "</div>";
+		message += selfMessage;
+	} else {
+		message += "<div class='messageBox received'>";
+		message += profile;
+		let newMessage = "<div class='message received'>" + chat + "</div>";
+		message += newMessage;
+	}
+	message += "</div>"
+
+	return message;
+}
 
 $(document).ready(function() {
+	ROOM_INFO.profileImages[USER.name] = sessionStorage.getItem('profileImage');
+	document.getElementById("profileImage").src = "data:image/jpg;base64," + ROOM_INFO.profileImages[USER.name];
 	document.getElementById('username').innerText = USER.name;
 
 	document.getElementById('leaveButton').addEventListener('click', function() {
@@ -91,59 +112,52 @@ $(document).ready(function() {
 			// onopen
 			() => {
 				console.log("WebSocket 연결 성공");
-				updateParticipants(USER.name);
 				SOCKET.socket.send(JSON.stringify(USER));
 			},
 
 			// onmessage
 			(event) => {
 				const json = JSON.parse(event.data);
+				if (json.hasOwnProperty("participants")) {
+					json.participants.forEach(participant => {
+						updateParticipants(participant.name, 'in');
+					})
+
+					return;
+				}
+
 				if (json.hasOwnProperty("newUser")) {
-					USER.users.push(json.newUser.name);
-					updateParticipants();
+					updateParticipants(json.newUser.name, 'in');
+
+					return;
+				}
+
+				if (json.hasOwnProperty("outUser")) {
+					updateParticipants(json.outUser.name, 'out');
 
 					return;
 				}
 
 				if (json.hasOwnProperty("message")) {
 					let chatMessages = document.getElementById("chatMessages");
-					let lines = json.message.split('\n');
 					let message = "";
-					lines.forEach((line, index) => {
-						if (line == '') return;
-						let chat = line.split(':');
 
-						let profile = "<div class='mini-profile'>";
-						profile += "<img src='" + chat[0] + "' alt='프로필' class='profile-img'>";
-						profile += "<span class='username' id='username'>" + chat[0] + "</span>";
-						profile += "</div>"
-
-						if (chat[0] == USER.name) {
-							message += "<div class='messageBox sent'>";
-							message += profile;
-							let selfMessage = "<div class='message sent'>" + chat[1] + "</div>";
-							message += selfMessage;
-						} else {
-							message += "<div class='messageBox received'>";
-							message += profile;
-							let newMessage = "<div class='message received'>" + chat[1] + "</div>";
-							message += newMessage;
-						}
-						message += "</div>"
-					})
-
-					if (json.hasOwnProperty("init")) {
-						fetchProfileImage(message).then(() => {
-							USER.users.forEach((user) => {
-								message = message.replaceAll("src='" + user.name + "'", 'src="data:image/jpg;base64,' + USER.profileImage[user.name] + '"');
-							});
-							chatMessages.innerHTML += message;
-						});
-					} else {
-						USER.users.forEach((user) => {
-							message = message.replaceAll("src='" + user.name + "'", 'src="data:image/jpg;base64,' + USER.profileImage[user.name] + '"');
-						});
+					// 채팅 참여 후 채팅 한 번씩 전송받을 때
+					if (json.message.length == 1) {
+						message += makeChatbox(json.message.userName, json.message.message);
 					}
+
+					// 저장된 채팅 불러올 때 (저장된 채팅이 1개일 때는 위의 분기문 통해도 상관없음)
+					if (json.message.length > 1) {
+						let lines = json.message.split('\n');
+						lines.forEach((line, index) => {
+							if (line == '') return;
+							let chat = line.split(':');
+							message += makeChatbox(chat[0], chat[1]);
+						})
+					}
+
+					chatMessages.innerHTML += message;
 				}
 			},
 
@@ -164,7 +178,7 @@ function sendMessage() {
 
 	let message = "<div class='messageBox sent'>"
 	let profile = "<div class='mini-profile'>";
-	profile += "<img src='data:image/jpg;base64," + USER.profileImage[data.userName] + "' alt='프로필' class='profile-img'>";
+	profile += "<img src='data:image/jpg;base64," + ROOM_INFO.profileImages[data.userName] + "' alt='프로필' class='profile-img'>";
 	profile += "<span class='username' id='username'>" + data.userName + "</span>";
 	profile += "</div>"
 	message += profile;

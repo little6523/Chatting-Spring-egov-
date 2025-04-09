@@ -59,7 +59,7 @@ public class ChattingRoomManager {
     }
     
     // 연결 종료된 클라이언트가 있는 경우
-    public List<User> removeUser(Session session, String roomName) {
+    public User removeUser(Session session, String roomName) {
         List<String> userNames = new ArrayList<>();
         List<User> users = rooms.get(roomName).getParticipatns();
         Iterator<User> iterator = users.iterator();
@@ -70,7 +70,8 @@ public class ChattingRoomManager {
                 continue;
             }
             iterator.remove();
+            return u;
         }
-        return users;
+        return null;
     }
 }
