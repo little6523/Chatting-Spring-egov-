@@ -13,7 +13,8 @@ const USER = {
 	profileImage: {}
 }
 
-function fetchProfileImage() {
+// 서버로부터 같은 채팅방의 유저들의 프로필 이미지를 받는 메소드
+/*function fetchProfileImage() {
 	return new Promise((resolve, reject) => {
 		const promises = USER.users.map((user) => {
 			return new Promise((res, rej) => {
@@ -35,6 +36,41 @@ function fetchProfileImage() {
 			.then(() => resolve())  // 모든 사용자 이미지 처리가 끝나면 최종 resolve
 			.catch(err => reject(err));
 	});
+}*/
+
+function fetchProfileImage(username) {
+	return new Promise((resolve, reject) => {
+		const data = { name: username };
+		common.sendAjax('post', '/api/profileImages', data, (response, xhr) => {
+			if (USER.profileImage[username] != response.image) {
+				USER.profileImage[username] = response.image;
+			}
+			resolve(username); // 이 사용자 이미지 처리가 끝나면 resolve
+		});
+	})
+}
+
+function updateParticipants(username) {
+	USER.users.push(username);
+	document.getElementById("userNumber").textContent = USER.users.length;
+	const participantsList = document.getElementById("participantsList");
+
+	let userList = "";
+
+	// 채팅 참가자 프로필 이미지 업데이트
+	fetchProfileImage(username)
+		.then((username) => {
+			console.log(username);
+			document.getElementById('profileImage').src = "data:image/jpg;base64," + USER.profileImage[username];
+		})
+
+	// 채팅 참가자 목록 업데이트
+	if (username == USER.name) {
+		userList = "<li class='participant'> 나: " + username + "</li>";
+	} else {
+		userList = "<li>" + username + "</li>";
+	}
+	participantsList.innerHTML += userList;
 }
 
 
@@ -55,35 +91,17 @@ $(document).ready(function() {
 			// onopen
 			() => {
 				console.log("WebSocket 연결 성공");
+				updateParticipants(USER.name);
 				SOCKET.socket.send(JSON.stringify(USER));
 			},
 
 			// onmessage
 			(event) => {
 				const json = JSON.parse(event.data);
-				if (json.hasOwnProperty("users")) {
-					USER.users = json.users;
-					document.getElementById("userNumber").textContent = json.users.length;
+				if (json.hasOwnProperty("newUser")) {
+					USER.users.push(json.newUser.name);
+					updateParticipants();
 
-					const participantsList = document.getElementById("participantsList");
-					let userList = "";
-					json.users.forEach(user => {
-
-						// 채팅 참가자 프로필 이미지 업데이트
-						data = {}
-						data.name = user.name;
-						common.sendAjax('post', '/api/profileImages', data, function(response, xhr) {
-							USER.profileImage[user.name] = response.image;
-						});
-
-						// 채팅 참가자 목록 업데이트
-						if (user.name == USER.name) {
-							userList += "<li class='participant'> 나: " + user.name + "</li>";
-						} else {
-							userList += "<li>" + user.name + "</li>";
-						}
-					});
-					participantsList.innerHTML = userList;
 					return;
 				}
 
@@ -114,12 +132,18 @@ $(document).ready(function() {
 						message += "</div>"
 					})
 
-					fetchProfileImage(message).then(() => {
+					if (json.hasOwnProperty("init")) {
+						fetchProfileImage(message).then(() => {
+							USER.users.forEach((user) => {
+								message = message.replaceAll("src='" + user.name + "'", 'src="data:image/jpg;base64,' + USER.profileImage[user.name] + '"');
+							});
+							chatMessages.innerHTML += message;
+						});
+					} else {
 						USER.users.forEach((user) => {
 							message = message.replaceAll("src='" + user.name + "'", 'src="data:image/jpg;base64,' + USER.profileImage[user.name] + '"');
 						});
-						chatMessages.innerHTML += message;
-					});
+					}
 				}
 			},
 
@@ -140,7 +164,7 @@ function sendMessage() {
 
 	let message = "<div class='messageBox sent'>"
 	let profile = "<div class='mini-profile'>";
-	profile += "<img src='data:image/jpg;base64," + USER.profileImage[data.userName] + "' alt='프로필' class='profile-img " + chat[0] + "'>";
+	profile += "<img src='data:image/jpg;base64," + USER.profileImage[data.userName] + "' alt='프로필' class='profile-img'>";
 	profile += "<span class='username' id='username'>" + data.userName + "</span>";
 	profile += "</div>"
 	message += profile;

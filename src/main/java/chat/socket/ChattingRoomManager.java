@@ -45,7 +45,7 @@ public class ChattingRoomManager {
 	}
 	
     // 새로 연결된 클라이언트가 있는 경우
-    public List<User> newClient(Map<String, Object> userInfo, String roomName, Session session) {
+    public User newClient(Map<String, Object> userInfo, String roomName, Session session) {
         System.out.println("클라이언트 이름: " + userInfo.get("name"));
         String name = (String) userInfo.get("name");
         User newUser = new User(name, session);
@@ -55,7 +55,7 @@ public class ChattingRoomManager {
         Room room  = rooms.get(roomName);
         room.addUser(newUser);
 
-        return room.getParticipatns();
+        return newUser;
     }
     
     // 연결 종료된 클라이언트가 있는 경우

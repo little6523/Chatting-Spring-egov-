@@ -59,10 +59,11 @@ public class ChatServer {
             Room room = chattingRoomManager.getChattingRoom(roomName);
 
             if (message.containsKey("name")) {
-                List<User> users = chattingRoomManager.newClient(message, roomName, session);
-                Map<String, Object> participants = new HashMap<>();
-                participants.put("users", users);
-                sendToAll(users, participants);
+                User user = chattingRoomManager.newClient(message, roomName, session);
+                Map<String, Object> newUser = new HashMap<>();
+                newUser.put("newUser", user);
+                List<User> users = chattingRoomManager.getChattingRoom(roomName).getParticipatns();
+                sendToAllExpectMe(users, session, newUser);
                 
                 // 클라이언트가 연결되었을 때 메시지 전송
                 Map<String, Object> map = new HashMap<>();
@@ -72,6 +73,7 @@ public class ChatServer {
                 	return;
                 }
                 
+                map.put("type", "init");
                 map.put("message", oldChatting);
                 sendMessage(session, map);
                 
@@ -103,6 +105,17 @@ public class ChatServer {
     private void sendMessage(Session session, Map<String, Object> message) throws IOException {
         String jsonMessage = mapToJson(message);
         session.getBasicRemote().sendText(jsonMessage);
+    }
+    
+    private void sendToAllExpectMe(List<User> users, Session session, Map<String, Object> message) {
+        for (User user : users) {
+        	if (user.getSession() == session) continue;
+            try {
+                sendMessage(user.getSession(), message);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     // 모든 유저에게 메시지 전송
