@@ -157,7 +157,7 @@ $(document).ready(function() {
 						})
 					}
 
-					chatMessages.innerHTML += message;
+					chatMessages.insertAdjacentHTML('beforeend', message);
 				}
 			},
 
@@ -186,7 +186,7 @@ function sendMessage() {
 	message += selfMessage;
 	message += "</div>"
 	let chatMessages = document.getElementById("chatMessages");
-	chatMessages.innerHTML += message;
+	chatMessages.insertAdjacentHTML('beforeend', message);
 
 	document.getElementById("messageInput").value = "";  // 입력창 초기화
 }
