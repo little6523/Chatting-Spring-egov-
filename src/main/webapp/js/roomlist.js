@@ -28,9 +28,9 @@ window.onclick = function(event) {
 }
 
 $(document).ready(function() {
-	const name = sessionStorage.getItem('username');
+	const name = sessionStorage.getItem('nickname');
 	data = {}
-	data.name = name;
+	data.nickname = name;
 	
 	document.getElementById('username').innerText = name;
 
@@ -41,9 +41,10 @@ $(document).ready(function() {
 
 	document.querySelectorAll(".room-item").forEach(room => {
 		room.addEventListener("click", function() {
+			data.roomName = $(this).attr("data-room");
+			common.sendAjax('post', '/api/enterRoom', data, function(response, xhr) {})
 			sessionStorage.setItem('roomname', $(this).attr("data-room"));
 			window.location.href = '/webview/chat/rooms?roomName=' + $(this).attr("data-room");
-			console.log($(this).attr("data-room"));
 		});
 	});
 })
@@ -68,7 +69,7 @@ submitBtn.onclick = function() {
 
 	data = {}
 	data.roomName = roomName;
-	data.name = sessionStorage.getItem('username');
+	data.nickname = sessionStorage.getItem('nickname');
 	common.sendAjax('post', '/api/createRoom', data, function(response, xhr) {
 		if (!response.hasOwnProperty('error')) {
 			// 채팅방 목록 업데이트
@@ -88,6 +89,7 @@ submitBtn.onclick = function() {
 			
 			const element = document.querySelector('[data-room="' + roomName + '"]');
 			element.addEventListener("click", function() {
+				common.sendAjax('post', '/api/enterRoom', data, function(response, xhr) {})
 				window.location.href = '/webview/chat/rooms?roomName=' + roomName;
 			});
 		} else {

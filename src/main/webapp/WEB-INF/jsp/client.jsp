@@ -17,7 +17,10 @@
 				<img src="" id="profileImage" alt="프로필" class="profile-img">
 				<span class="username" id="username">사용자 이름</span>
 			</div>
-			<button id="leaveButton" class="leave-button">나가기</button>
+			<div class="button-container">
+				<button id="returnButton" class="return-button">채팅방으로<br> 돌아가기</button>
+				<button id="leaveButton" class="leave-button">나가기</button>
+			</div>
 			<h3>참가자 목록</h3>
 			<ul class="participants-list" id="participantsList">
 				<!-- 참가자들이 여기에 동적으로 추가됩니다 -->
@@ -30,8 +33,8 @@
 			<div class="chat-header">
 				<h2 id="roomName">${roomName}</h2>
 				<div class="chat-info">
-					<span class="participant-count">참가자: </span> <span
-						class="participant-count" id="userNumber">0</span>
+					<span class="participant-count">참가자: </span>
+					<span class="participant-count" id="userNumber">0</span>
 				</div>
 			</div>
 

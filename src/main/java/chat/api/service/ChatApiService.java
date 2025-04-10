@@ -6,9 +6,11 @@ import chat.socket.User;
 
 public interface ChatApiService {
 
-	public Map<String, Object> test();
-
 	public int createRoom(Map<String, Object> body);
 
-	public boolean login(Map<String, Object> body);
+	public Map<String, Object> login(Map<String, Object> body);
+
+	public void enterChattingRoom(Map<String, Object> body);
+
+	public void exitChattingRoom(Map<String, Object> body);
 }

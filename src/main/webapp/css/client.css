@@ -17,16 +17,38 @@ body {
     background-color: white;
 }
 
-.leave-button {
-    width: 90%;
-    margin: 10px auto;
-    padding: 8px;
-    background-color: #ff4444;
+/* 버튼들을 나란히 배치하기 위한 컨테이너 스타일 */
+.button-container {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.return-button {
+    width: 160px;  /* 돌아가기 버튼은 더 넓게 */
+    background-color: #4CAF50;
     color: white;
+    padding: 8px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    display: block;
+    margin-right: 10px;
+    font-size: 14px;
+}
+
+.return-button:hover {
+    background-color: #45a049;  /* 마우스 오버시 약간 더 어두운 초록색 */
+}
+
+.leave-button {
+    width: 80px;  /* 버튼 너비 축소 */
+    background-color: #ff4444;
+    color: white;
+    padding: 8px;  /* 패딩도 약간 줄임 */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
 }
 
 .leave-button:hover {
