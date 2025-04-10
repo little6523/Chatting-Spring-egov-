@@ -23,6 +23,13 @@
 		name = #{roomName}
 	</select>
 
+	<select id="getParticipationInfo" resultType="map">
+		SELECT *
+		FROM participants
+		WHERE
+		user_seq = #{userSeq} and room_seq = #{roomSeq}
+	</select>
+
 	<insert id="createRoom">
 		INSERT INTO room (name, id)
 		VALUE (#{name},
@@ -37,6 +44,7 @@
 
 	<delete id="exitRoom">
 		DELETE FROM participants
-		WHERE user_seq = #{userSeq} AND room_seq = #{roomSeq};
+		WHERE user_seq = #{userSeq}
+		AND room_seq = #{roomSeq};
 	</delete>
 </mapper>

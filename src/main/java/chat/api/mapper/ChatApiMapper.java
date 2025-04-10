@@ -13,6 +13,8 @@ public interface ChatApiMapper {
 	
 	public Map<String, Object> getRoomByName(Map<String, Object> param);
 	
+	public Map<String, Object> getParticipationInfo(Map<String, Object> param);
+	
 	public void createRoom(Map<String, Object> param);
 
 	public void enterRoom(Map<String, Object> param);

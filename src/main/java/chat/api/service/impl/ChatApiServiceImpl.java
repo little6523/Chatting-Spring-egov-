@@ -61,8 +61,11 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
 		Map<String, Object> param = new HashMap<>();
 		param.put("userSeq", user.get("seq"));
 		param.put("roomSeq", room.get("seq"));
-		chatApiMapper.enterRoom(param);
 		
+		// 방에 참여한 상태가 아니면 방에 참여 처리
+		if (chatApiMapper.getParticipationInfo(param) == null) {
+			chatApiMapper.enterRoom(param);
+		}
 	}
 
 	@Override
