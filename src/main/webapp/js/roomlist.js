@@ -43,6 +43,7 @@ $(document).ready(function() {
 		room.addEventListener("click", function() {
 			sessionStorage.setItem('roomname', $(this).attr("data-room"));
 			window.location.href = '/webview/chat/rooms?roomName=' + $(this).attr("data-room");
+			console.log($(this).attr("data-room"));
 		});
 	});
 })
@@ -54,10 +55,6 @@ submitBtn.onclick = function() {
 	if (!roomName) {
 		alert('채팅방 이름을 입력해주세요.');
 		return;
-	}
-
-	const roomInfo = {
-		name: roomName,
 	}
 
 	// 여기에 채팅방 생성 로직 추가
@@ -87,7 +84,7 @@ submitBtn.onclick = function() {
 			roomItem += '   </div>'
 			roomItem += '</div>'
 
-			roomList.innerHTML += roomItem;
+			roomList.insertAdjacentHTML('beforeend', roomItem);
 			
 			const element = document.querySelector('[data-room="' + roomName + '"]');
 			element.addEventListener("click", function() {
