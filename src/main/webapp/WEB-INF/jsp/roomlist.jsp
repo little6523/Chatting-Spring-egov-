@@ -17,6 +17,7 @@
 				<img src="" id="profileImage" alt="프로필" class="profile-img">
 				<span class="username" id="username">사용자 이름</span>
 			</div>
+			<button id="mypageButton" class="mypage-button">마이페이지</button>
 		</div>
 
 		<!-- 메인 컨텐츠 영역 -->

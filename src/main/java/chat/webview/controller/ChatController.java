@@ -47,4 +47,10 @@ public class ChatController {
         model.addAttribute("roomName", roomName);
 		return "client";
 	}
+	
+	@GetMapping("/mypage")
+	public String myPage(@RequestParam("nickname") String nickname, Model model) {
+		model.addAttribute("nicknme", nickname);
+		return "mypage";
+	}
 }

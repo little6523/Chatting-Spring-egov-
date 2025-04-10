@@ -39,6 +39,10 @@ $(document).ready(function() {
 		sessionStorage.setItem('profileImage', response.image);
 	});
 
+	$('#mypageButton').click(function() {
+    	window.location.href = '/webview/mypage';
+	});
+
 	document.querySelectorAll(".room-item").forEach(room => {
 		room.addEventListener("click", function() {
 			data.roomName = $(this).attr("data-room");
