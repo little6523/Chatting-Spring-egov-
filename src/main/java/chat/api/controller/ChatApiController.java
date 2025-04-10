@@ -32,9 +32,9 @@ public class ChatApiController {
 	@PostMapping("/login")
 	public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, Object> body) {
 		HttpHeaders headers = new HttpHeaders();
-		boolean login = chatApiService.login(body);
+		Map<String, Object> login = chatApiService.login(body);
 		Map<String, Object> result = new HashMap<>();
-		if (!login) {
+		if (login == null) {
 			result.put("result", "실패");
 			result.put("rspCode", "2");
 			return ResponseEntity.ok().headers(headers).body(result);
@@ -42,6 +42,7 @@ public class ChatApiController {
 		
 		result.put("reuslt", "성공");
 		result.put("rspCode", "1");
+		result.put("nickname", (String) login.get("nickname"));
 		return ResponseEntity.ok().headers(headers).body(result);
 	}
 	
@@ -64,10 +65,30 @@ public class ChatApiController {
 		return ResponseEntity.ok().headers(headers).body(result);
 	}
 	
+	@PostMapping("/enterRoom")
+	public ResponseEntity<Map<String, Object>> enterRoom(@RequestBody Map<String, Object> body) {
+		chatApiService.enterChattingRoom(body);
+		HttpHeaders headers = new HttpHeaders();
+		Map<String, Object> result = new HashMap<>();
+		
+		result.put("rspCode", "1");
+		return ResponseEntity.ok().headers(headers).body(result);
+	}
+	
+	@PostMapping("/exitRoom")
+	public ResponseEntity<Map<String, Object>> exitRoom(@RequestBody Map<String, Object> body) {
+		chatApiService.exitChattingRoom(body);
+		HttpHeaders headers = new HttpHeaders();
+		Map<String, Object> result = new HashMap<>();
+		
+		result.put("rspCode", "1");
+		return ResponseEntity.ok().headers(headers).body(result);
+	}
+	
 	@PostMapping("/profileImages")
 	public ResponseEntity<Map<String, Object>> getImage(@RequestBody Map<String, Object> body) {
         try {
-        	String name = (String) body.get("name");
+        	String name = (String) body.get("nickname");
         	
             // 파일 읽기
             Path imagePath = Paths.get(IMAGE_DIR + name + ".jpg");

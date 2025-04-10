@@ -28,9 +28,9 @@ window.onclick = function(event) {
 }
 
 $(document).ready(function() {
-	const name = sessionStorage.getItem('username');
+	const name = sessionStorage.getItem('nickname');
 	data = {}
-	data.name = name;
+	data.nickname = name;
 	
 	document.getElementById('username').innerText = name;
 
@@ -39,8 +39,14 @@ $(document).ready(function() {
 		sessionStorage.setItem('profileImage', response.image);
 	});
 
+	$('#mypageButton').click(function() {
+    	window.location.href = '/webview/mypage';
+	});
+
 	document.querySelectorAll(".room-item").forEach(room => {
 		room.addEventListener("click", function() {
+			data.roomName = $(this).attr("data-room");
+			common.sendAjax('post', '/api/enterRoom', data, function(response, xhr) {})
 			sessionStorage.setItem('roomname', $(this).attr("data-room"));
 			window.location.href = '/webview/chat/rooms?roomName=' + $(this).attr("data-room");
 		});
@@ -56,10 +62,6 @@ submitBtn.onclick = function() {
 		return;
 	}
 
-	const roomInfo = {
-		name: roomName,
-	}
-
 	// 여기에 채팅방 생성 로직 추가
 	console.log('채팅방 생성:', {
 		name: roomName,
@@ -71,7 +73,7 @@ submitBtn.onclick = function() {
 
 	data = {}
 	data.roomName = roomName;
-	data.name = sessionStorage.getItem('username');
+	data.nickname = sessionStorage.getItem('nickname');
 	common.sendAjax('post', '/api/createRoom', data, function(response, xhr) {
 		if (!response.hasOwnProperty('error')) {
 			// 채팅방 목록 업데이트
@@ -87,10 +89,11 @@ submitBtn.onclick = function() {
 			roomItem += '   </div>'
 			roomItem += '</div>'
 
-			roomList.innerHTML += roomItem;
+			roomList.insertAdjacentHTML('beforeend', roomItem);
 			
 			const element = document.querySelector('[data-room="' + roomName + '"]');
 			element.addEventListener("click", function() {
+				common.sendAjax('post', '/api/enterRoom', data, function(response, xhr) {})
 				window.location.href = '/webview/chat/rooms?roomName=' + roomName;
 			});
 		} else {

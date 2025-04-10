@@ -23,23 +23,17 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
 	
 	@Autowired
 	private ChattingRoomManager chattingRoomManager;
-
+	
 	@Override
-	public Map<String, Object> test() {
-		Map<String, Object> map = chatApiMapper.test();
+	public Map<String, Object> login(Map<String, Object> body) {
+		Map<String, Object> map = chatApiMapper.login(body);
+		if (map == null) {
+			return null;
+		}
+		
 		return map;
 	}
 	
-	@Override
-	public boolean login(Map<String, Object> body) {
-		Map<String, Object> map = chatApiMapper.getUser(body);
-		if (map == null) {
-			return false;
-		}
-		
-		return true;
-	}
-
 	@Override
 	public int createRoom(Map<String, Object> body) {
 		String name = (String) body.get("roomName");
@@ -58,5 +52,30 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
         int size = chattingRoomManager.createRoom(name, room);
 
         return size;
+	}
+
+	@Override
+	public void enterChattingRoom(Map<String, Object> body) {
+		Map<String, Object> user = chatApiMapper.getUserByNickname(body);
+		Map<String, Object> room = chatApiMapper.getRoomByName(body);
+		Map<String, Object> param = new HashMap<>();
+		param.put("userSeq", user.get("seq"));
+		param.put("roomSeq", room.get("seq"));
+		
+		// 방에 참여한 상태가 아니면 방에 참여 처리
+		if (chatApiMapper.getParticipationInfo(param) == null) {
+			chatApiMapper.enterRoom(param);
+		}
+	}
+
+	@Override
+	public void exitChattingRoom(Map<String, Object> body) {
+		Map<String, Object> user = chatApiMapper.getUserByNickname(body);
+		Map<String, Object> room = chatApiMapper.getRoomByName(body);
+		Map<String, Object> param = new HashMap<>();
+		param.put("userSeq", user.get("seq"));
+		param.put("roomSeq", room.get("seq"));
+		chatApiMapper.exitRoom(param);
+		
 	}
 }

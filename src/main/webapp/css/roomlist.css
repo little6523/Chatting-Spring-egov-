@@ -29,6 +29,23 @@
 	margin-right: 10px;
 }
 
+.mypage-button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 15px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.mypage-button:hover {
+    background-color: #45a049;
+}
+
 .main-content {
 	flex: 1;
 	display: flex;

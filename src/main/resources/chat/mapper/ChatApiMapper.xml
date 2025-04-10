@@ -1,16 +1,50 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
 	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
- 
+
 <mapper namespace="chat.api.mapper.ChatApiMapper">
-    <select id="getUser" resultType="map">
-    	SELECT *
-    	FROM users
-    	WHERE id = #{id} and password = #{password}
-    </select>
-    
-    <insert id="createRoom">
-    	INSERT INTO room (name, id)
-    	VALUE (#{name}, #{manager});
-    </insert>
+	<select id="login" resultType="map">
+		SELECT *
+		FROM users
+		WHERE id = #{id}
+		and password = #{password}
+	</select>
+
+	<select id="getUserByNickname" resultType="map">
+		SELECT *
+		FROM users
+		WHERE nickname = #{nickname}
+	</select>
+
+	<select id="getRoomByName" resultType="map">
+		SELECT *
+		FROM room
+		WHERE
+		name = #{roomName}
+	</select>
+
+	<select id="getParticipationInfo" resultType="map">
+		SELECT *
+		FROM participants
+		WHERE
+		user_seq = #{userSeq} and room_seq = #{roomSeq}
+	</select>
+
+	<insert id="createRoom">
+		INSERT INTO room (name, id)
+		VALUE (#{name},
+		#{manager});
+	</insert>
+
+	<insert id="enterRoom">
+		INSERT INTO participants (user_seq, room_seq)
+		VALUE
+		(#{userSeq}, #{roomSeq});
+	</insert>
+
+	<delete id="exitRoom">
+		DELETE FROM participants
+		WHERE user_seq = #{userSeq}
+		AND room_seq = #{roomSeq};
+	</delete>
 </mapper>

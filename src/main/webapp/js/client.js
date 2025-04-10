@@ -42,7 +42,7 @@ function updateParticipants(username, type) {
 		} else {
 			userList = "<li>" + username + "</li>";
 		}
-		participantsList.innerHTML += userList;
+		participantsList.insertAdjacentHTML('beforeend', userList);
 
 		// 채팅 참가자 프로필 이미지 업데이트
 		if (USER.name != username) {
@@ -98,8 +98,21 @@ $(document).ready(function() {
 	document.getElementById("profileImage").src = "data:image/jpg;base64," + ROOM_INFO.profileImages[USER.name];
 	document.getElementById('username').innerText = USER.name;
 
-	document.getElementById('leaveButton').addEventListener('click', function() {
+	document.getElementById('returnButton').addEventListener('click', function() {
 		if (confirm('정말로 채팅방을 나가시겠습니까?')) {
+			// 웹소켓 연결 종료
+			SOCKET.socket.close();
+			// 메인 페이지로 리다이렉트
+			window.location.href = '/webview/chat';
+		}
+	});
+	
+	document.getElementById('leaveButton').addEventListener('click', function() {
+		if (confirm('정말로 채팅방을 \'탈퇴\'하시겠습니까? (기존의 채팅 내용은 사라집니다.)')) {
+			data = {}
+			data.nickname = sessionStorage.getItem('nickname');
+			data.roomName = sessionStorage.getItem('roomname');
+			common.sendAjax('post', '/api/exitRoom', data, function(response, xhr) {})
 			// 웹소켓 연결 종료
 			SOCKET.socket.close();
 			// 메인 페이지로 리다이렉트
@@ -157,7 +170,7 @@ $(document).ready(function() {
 						})
 					}
 
-					chatMessages.innerHTML += message;
+					chatMessages.insertAdjacentHTML('beforeend', message);
 				}
 			},
 
@@ -186,7 +199,7 @@ function sendMessage() {
 	message += selfMessage;
 	message += "</div>"
 	let chatMessages = document.getElementById("chatMessages");
-	chatMessages.innerHTML += message;
+	chatMessages.insertAdjacentHTML('beforeend', message);
 
 	document.getElementById("messageInput").value = "";  // 입력창 초기화
 }
