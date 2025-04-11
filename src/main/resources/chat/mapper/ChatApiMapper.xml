@@ -22,6 +22,24 @@
 		WHERE
 		name = #{roomName}
 	</select>
+	
+	<update id="changeImagePath">
+		UPDATE users
+		SET image = #{imagePath}
+		WHERE nickname = #{newNickname}
+	</update>
+	
+	<update id="changeNickname">
+		UPDATE users
+		SET nickname = #{newNickname}
+		WHERE nickname = #{oldNickname}
+	</update>
+	
+	<update id="changePassword">
+		UPDATE users
+		SET password = #{password}
+		WHERE nickname = #{oldNickname}
+	</update>
 
 	<select id="getParticipationInfo" resultType="map">
 		SELECT *

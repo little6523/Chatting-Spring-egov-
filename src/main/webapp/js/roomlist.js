@@ -40,7 +40,7 @@ $(document).ready(function() {
 	});
 
 	$('#mypageButton').click(function() {
-    	window.location.href = '/webview/mypage';
+    	window.location.href = '/webview/mypage?nickname=' + sessionStorage.getItem('nickname');
 	});
 
 	document.querySelectorAll(".room-item").forEach(room => {

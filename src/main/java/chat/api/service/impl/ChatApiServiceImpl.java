@@ -1,7 +1,14 @@
 package chat.api.service.impl;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.annotation.Resource;
 
@@ -13,7 +20,6 @@ import chat.api.mapper.ChatApiMapper;
 import chat.api.service.ChatApiService;
 import chat.socket.ChattingRoomManager;
 import chat.socket.Room;
-import chat.socket.User;
 
 @Service("ChatApiService")
 public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatApiService{
@@ -23,6 +29,8 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
 	
 	@Autowired
 	private ChattingRoomManager chattingRoomManager;
+	
+	private static final String IMAGE_DIR = "C:/ChattingProfileImages/";
 	
 	@Override
 	public Map<String, Object> login(Map<String, Object> body) {
@@ -35,7 +43,68 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
 	}
 	
 	@Override
-	public int createRoom(Map<String, Object> body) {
+	public String getImage(Map<String, Object> body) {
+        try {
+        	String name = (String) body.get("nickname");
+        	
+            Path imagePath = Paths.get(IMAGE_DIR + name + ".jpg");
+            byte[] imageBytes = Files.readAllBytes(imagePath);
+            
+            return Base64.getEncoder().encodeToString(imageBytes);
+        } catch (IOException e) {
+            return "이미지 읽기 오류";
+        }
+	}
+
+	@Override
+	public void postImage(String image, String newNickname) {
+        try {
+            // 디렉토리 없으면 생성
+            Path path = Paths.get(IMAGE_DIR);
+            if (Files.notExists(path)) {
+                Files.createDirectories(path);
+            }
+            
+            byte[] decodedBytes = Base64.getDecoder().decode(image);
+
+            String saveFileName = newNickname + ".jpg";
+
+            Path saveFilePath = path.resolve(saveFileName);
+
+            Files.write(saveFilePath, decodedBytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+	}
+	
+	
+	
+	@Override
+	public void changeNickname(String oldNickname, String newNickname) {
+		Map<String, Object> param = new HashMap<>();
+		param.put("oldNickname", oldNickname);
+		param.put("newNickname", newNickname);
+		chatApiMapper.changeNickname(param);
+		
+		Path path = Paths.get(IMAGE_DIR);
+//		String saveFileName = oldNickname + ".jpg";
+		Path saveFilePath = path.resolve(newNickname);
+		param.clear();
+		param.put("imagePath", saveFilePath.toString());
+		param.put("newNickname", newNickname);
+		chatApiMapper.changeImagePath(param);
+	}
+
+	@Override
+	public void changePassword(String oldNickname, String password) {
+		Map<String, Object> param = new HashMap<>();
+		param.put("oldNickname", oldNickname);
+		param.put("password", password);
+		chatApiMapper.changePassword(param);
+	}
+	
+	@Override
+	public int createChattingRoom(Map<String, Object> body) {
 		String name = (String) body.get("roomName");
 		String userId = (String) body.get("name");
 		

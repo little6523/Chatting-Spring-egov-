@@ -16,9 +16,11 @@ $(document).ready(function() {
             reader.readAsDataURL(e.target.files[0]);
         }
     });
+    
+    $('#nickname').val(sessionStorage.getItem('nickname'));
 
     // 폼 제출 시
-    $('#mypageForm').submit(function(e) {
+    $('#updateButton').click(function(e) {
         e.preventDefault();
 
         // 비밀번호 일치 여부 확인
@@ -32,23 +34,23 @@ $(document).ready(function() {
 
         // 비밀번호가 일치하면 에러 메시지 제거
         $('#passwordError').text('');
-
-        // 여기에 서버로 데이터를 전송하는 AJAX 코드 추가
-        const formData = new FormData(this);
         
-        $.ajax({
-            url: '/api/user/update',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                alert('정보가 성공적으로 수정되었습니다.');
-                window.location.href = '/chat/rooms'; // 채팅방 목록으로 이동
-            },
-            error: function(xhr, status, error) {
-                alert('정보 수정에 실패했습니다.');
-            }
-        });
+        let str = $('#currentProfile').attr('src');
+        
+        data = {}
+        data.image = str.substring(str.indexOf(',') + 1);
+        data.oldNickname = sessionStorage.getItem('nickname');
+        data.newNickname = $('#nickname').val();
+        data.password = $('#newPassword').val();
+        
+        common.sendAjax('post', '/api/mypage/update', data, function(response, xhr) {
+			sessionStorage.setItem('nickname', data.newNickname);
+			$('#newPassword').val('');
+			$('#confirmPassword').val('');
+		});
     });
+    
+    $('#returnButton').click(function(e) {
+		window.location.href='/webview/chat'
+	});
 });
