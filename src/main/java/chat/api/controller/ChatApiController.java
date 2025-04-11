@@ -46,7 +46,7 @@ public class ChatApiController {
 		String password = (String) body.get("password");
 		
 		if (image != null && !"".equals(image)) {
-			chatApiService.postImage(image, newNickname);
+			chatApiService.postImage(image, oldNickname, newNickname);
 		}
 		
 		if (password != null) {

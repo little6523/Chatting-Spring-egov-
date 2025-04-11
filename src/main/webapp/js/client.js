@@ -7,7 +7,7 @@ window.addEventListener('beforeunload', (event) => {
 });
 
 const USER = {
-	name: sessionStorage.getItem('username'),
+	name: sessionStorage.getItem('nickname'),
 	roomName: document.getElementById('roomName').innerText,
 }
 

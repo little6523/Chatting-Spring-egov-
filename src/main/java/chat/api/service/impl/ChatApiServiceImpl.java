@@ -57,7 +57,7 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
 	}
 
 	@Override
-	public void postImage(String image, String newNickname) {
+	public void postImage(String image, String oldNickname, String newNickname) {
         try {
             // 디렉토리 없으면 생성
             Path path = Paths.get(IMAGE_DIR);
@@ -68,10 +68,13 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
             byte[] decodedBytes = Base64.getDecoder().decode(image);
 
             String saveFileName = newNickname + ".jpg";
+            String deleteFileName = oldNickname + ".jpg";
 
             Path saveFilePath = path.resolve(saveFileName);
+            Path deleteFilePath = path.resolve(deleteFileName);
 
             Files.write(saveFilePath, decodedBytes);
+            Files.deleteIfExists(deleteFilePath);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -87,7 +90,6 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
 		chatApiMapper.changeNickname(param);
 		
 		Path path = Paths.get(IMAGE_DIR);
-//		String saveFileName = oldNickname + ".jpg";
 		Path saveFilePath = path.resolve(newNickname);
 		param.clear();
 		param.put("imagePath", saveFilePath.toString());

@@ -45,6 +45,8 @@ $(document).ready(function() {
         
         common.sendAjax('post', '/api/mypage/update', data, function(response, xhr) {
 			sessionStorage.setItem('nickname', data.newNickname);
+			let str = $('#currentProfile').attr('src');
+			sessionStorage.setItem('profileImage', str.substring(str.indexOf(',') + 1));
 			$('#newPassword').val('');
 			$('#confirmPassword').val('');
 		});
