@@ -1,5 +1,6 @@
 package chat.api.service;
 
+import java.util.List;
 import java.util.Map;
 
 import chat.socket.User;
@@ -21,4 +22,6 @@ public interface ChatApiService {
 	public void changeNickname(String oldNickname, String newNickname);
 
 	public void changePassword(String oldNickname, String password);
+
+	public List<Map<String, Object>> getParticipants(Map<String, Object> body);
 }

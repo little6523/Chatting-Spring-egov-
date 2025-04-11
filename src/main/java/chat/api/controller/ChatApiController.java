@@ -34,6 +34,7 @@ public class ChatApiController {
 
 		result.put("reuslt", "성공");
 		result.put("rspCode", "1");
+		result.put("seq", login.get("seq"));
 		result.put("nickname", (String) login.get("nickname"));
 		return ResponseEntity.ok().headers(headers).body(result);
 	}
@@ -62,6 +63,15 @@ public class ChatApiController {
 		result.put("rspCode", "1");
 		return ResponseEntity.ok().headers(headers).body(result);
 	}
+	
+	@PostMapping("/participants")
+	public ResponseEntity<Map<String, Object>> getParticipants(@RequestBody Map<String, Object> body) {
+		HttpHeaders headers = new HttpHeaders();
+		Map<String, Object> result = new HashMap<>();
+		result.put("rspCode", "1");
+		result.put("participants", chatApiService.getParticipants(body));
+		return ResponseEntity.ok().headers(headers).body(result);
+	}
 
 	// 프로필 이미지를 따로 불러오기 위한 메소드
 	@PostMapping("/profileImages")
@@ -79,18 +89,18 @@ public class ChatApiController {
 	@PostMapping("/createRoom")
 	public ResponseEntity<Map<String, Object>> createRoom(@RequestBody Map<String, Object> body) {
 		System.out.println("방 정보: " + body);
-		int roomNumber = chatApiService.createChattingRoom(body);
+		int roomSeq = chatApiService.createChattingRoom(body);
 		HttpHeaders headers = new HttpHeaders();
 		Map<String, Object> result = new HashMap<>();
 
-		if (roomNumber == 0) {
+		if (roomSeq == 0) {
 			result.put("rspCode", "1");
 			result.put("error", "같은 이름의 방이 이미 존재합니다.");
 			return ResponseEntity.ok().headers(headers).body(result);
 		}
 
 		result.put("rspCode", "1");
-		result.put("roomNumber", roomNumber);
+		result.put("roomSeq", roomSeq);
 
 		return ResponseEntity.ok().headers(headers).body(result);
 	}

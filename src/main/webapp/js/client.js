@@ -12,8 +12,10 @@ const USER = {
 }
 
 const ROOM_INFO = {
+	roomSeq: sessionStorage.getItem('roomSeq'),
 	roomName: document.getElementById('roomName').innerText,
-	users: [],
+	users: {},
+	currentUsers: [],
 	profileImages: {}
 }
 
@@ -32,7 +34,7 @@ function fetchProfileImage(username) {
 function updateParticipants(username, type) {
 	const participantsList = document.getElementById("participantsList");
 	if (type == 'in') {
-		ROOM_INFO.users.push(username);
+		ROOM_INFO.currentUsers.push(username);
 
 		// 채팅 참가자 목록 업데이트
 		let userList = "";
@@ -54,7 +56,7 @@ function updateParticipants(username, type) {
 	}
 
 	if (type == 'out') {
-		ROOM_INFO.users = ROOM_INFO.users.filter(user => user != username);
+		ROOM_INFO.currentUsers = ROOM_INFO.currentUsers.filter(user => user != username);
 
 		const participants = participantsList.querySelectorAll('li');
 
@@ -65,7 +67,7 @@ function updateParticipants(username, type) {
 		});
 	}
 
-	document.getElementById("userNumber").textContent = ROOM_INFO.users.length;
+	document.getElementById("userNumber").textContent = ROOM_INFO.currentUsers.length;
 }
 
 function makeChatbox(username, chat) {
@@ -97,6 +99,8 @@ $(document).ready(function() {
 	ROOM_INFO.profileImages[USER.name] = sessionStorage.getItem('profileImage');
 	document.getElementById("profileImage").src = "data:image/jpg;base64," + ROOM_INFO.profileImages[USER.name];
 	document.getElementById('username').innerText = USER.name;
+	
+	ROOM_INFO.users = sessionStorage.getItem('users');
 
 	document.getElementById('returnButton').addEventListener('click', function() {
 		if (confirm('정말로 채팅방을 나가시겠습니까?')) {
@@ -157,7 +161,7 @@ $(document).ready(function() {
 
 					// 채팅 참여 후 채팅 한 번씩 전송받을 때
 					if (json.message.length == 1) {
-						message += makeChatbox(json.message.userName, json.message.message);
+						message += makeChatbox(ROOM_INFO.users[parseInt(userName)], json.message.message);
 					}
 
 					// 저장된 채팅 불러올 때 (저장된 채팅이 1개일 때는 위의 분기문 통해도 상관없음)
@@ -166,7 +170,7 @@ $(document).ready(function() {
 						lines.forEach((line, index) => {
 							if (line == '') return;
 							let chat = line.split(':');
-							message += makeChatbox(chat[0], chat[1]);
+							message += makeChatbox(ROOM_INFO.users[parseInt(chat[0])], chat[1]);
 						})
 					}
 
@@ -186,7 +190,7 @@ function sendMessage() {
 	data = {};
 	data.userName = USER.name;
 	data.roomName = USER.roomName;
-	data.message = USER.name + ":" + document.getElementById("messageInput").value;  // 입력된 메시지 가져오기
+	data.message = sessionStorage.getItem('seq') + ":" + document.getElementById("messageInput").value;  // 입력된 메시지 가져오기
 	SOCKET.socket.send(JSON.stringify(data));  // 메시지 전송
 
 	let message = "<div class='messageBox sent'>"

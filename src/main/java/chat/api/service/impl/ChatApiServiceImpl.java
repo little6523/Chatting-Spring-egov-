@@ -5,8 +5,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -80,8 +82,6 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
         }
 	}
 	
-	
-	
 	@Override
 	public void changeNickname(String oldNickname, String newNickname) {
 		Map<String, Object> param = new HashMap<>();
@@ -148,5 +148,22 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
 		param.put("roomSeq", room.get("seq"));
 		chatApiMapper.exitRoom(param);
 		
+	}
+
+	@Override
+	public List<Map<String, Object>> getParticipants(Map<String, Object> body) {
+		Map<String, Object> param = new HashMap<>();
+		param.put("roomSeq", body.get("roomSeq"));
+		List<Map<String, Object>> participants = chatApiMapper.getParticipants(param);
+		
+		param.clear();
+		List<Map<String, Object>> users = new ArrayList<>();
+		for (Map<String, Object> m : participants) {
+			param.put("userSeq", m.get("user_seq"));
+		 	Map<String, Object> user = chatApiMapper.getUserBySeq(param);
+		 	users.add(user);
+		}
+		
+		return users;
 	}
 }

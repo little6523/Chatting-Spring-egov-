@@ -12,7 +12,7 @@ import java.nio.file.StandardOpenOption;
 import chat.annotation.chat;
 
 @chat
-public class ChattingFileManager {
+public class ChattingLogManager {
 	
 	public String readChatting(String roomName) {
 		return read(roomName);

@@ -19,7 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import chat.annotation.chat;
-import chat.log.ChattingFileManager;
+import chat.log.ChattingLogManager;
 import chat.socket.config.ChatServerConfig;
 
 @ServerEndpoint(value = "/chat/{roomName}", configurator = ChatServerConfig.class)
@@ -30,9 +30,9 @@ public class ChatServer {
 	private ChattingRoomManager chattingRoomManager;
 	
 	@Autowired
-	private ChattingFileManager chattingFileManager;
-
-    @OnOpen
+	private ChattingLogManager chattingLogManager;
+	
+	@OnOpen
     public void onOpen(@PathParam("roomName") String roomName, Session session) throws IOException {
         String clientAddress = session.getRequestURI().getHost();
         int clientPort = session.getRequestURI().getPort();
@@ -72,7 +72,7 @@ public class ChatServer {
                 // 클라이언트가 연결되었을 때 메시지 전송
                 Map<String, Object> map = new HashMap<>();
                 
-                String oldChatting = chattingFileManager.readChatting(roomName);
+                String oldChatting = chattingLogManager.readChatting(roomName);
                 if (oldChatting == null || oldChatting.equals("")) {
                 	return;
                 }
@@ -84,7 +84,7 @@ public class ChatServer {
             }
 
             if (message.containsKey("message")) {
-            	chattingFileManager.saveChatting(roomName, (String) message.get("message"));
+            	chattingLogManager.saveChatting(roomName, (String) message.get("message"));
             	List<User> users = chattingRoomManager.getChattingRoom(roomName).getParticipatns();
             	sendToAllExpectMe(users, session, message);
                 return;
