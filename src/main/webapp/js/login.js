@@ -16,6 +16,7 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     common.sendAjax('post', '/api/login', data, function(response, xhr) {
 		// 로그인 성공 시 채팅방 목록 페이지로 이동
 		sessionStorage.setItem("nickname", response.nickname);
+		sessionStorage.setItem("seq", response.seq);
     	window.location.href = '/webview/chat';
 	})
 });

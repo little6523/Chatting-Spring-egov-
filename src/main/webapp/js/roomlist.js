@@ -31,7 +31,7 @@ $(document).ready(function() {
 	const name = sessionStorage.getItem('nickname');
 	data = {}
 	data.nickname = name;
-	
+
 	document.getElementById('username').innerText = name;
 
 	common.sendAjax('post', '/api/profileImages', data, function(response, xhr) {
@@ -40,14 +40,25 @@ $(document).ready(function() {
 	});
 
 	$('#mypageButton').click(function() {
-    	window.location.href = '/webview/mypage';
+		window.location.href = '/webview/mypage?nickname=' + sessionStorage.getItem('nickname');
 	});
 
 	document.querySelectorAll(".room-item").forEach(room => {
 		room.addEventListener("click", function() {
 			data.roomName = $(this).attr("data-room");
-			common.sendAjax('post', '/api/enterRoom', data, function(response, xhr) {})
+			common.sendAjax('post', '/api/enterRoom', data, function(response, xhr) { })
+			sessionStorage.setItem('roomSeq', $(this).find('input[type="hidden"]').attr('id'));
 			sessionStorage.setItem('roomname', $(this).attr("data-room"));
+			// 같은 채팅방에 참여 중인 참가자 리스트 얻기
+			data = {}
+			data.roomSeq = $(this).attr("data-room");
+			common.sendAjax('post', '/api/participants', data, function(response, xhr) {
+				users = {}
+				response.participants.forEach(participant => {
+					users[participant.seq] = participant.nickname;
+				});
+				sessionStorage.setItem('users', users);
+			})
 			window.location.href = '/webview/chat/rooms?roomName=' + $(this).attr("data-room");
 		});
 	});
@@ -81,6 +92,7 @@ submitBtn.onclick = function() {
 
 			let roomItem = ''
 			roomItem += '<div class="room-item" data-room="' + roomName + '">'
+			roomItem += '	<input type="hidden" id="' + response.roomSeq + '"/>'
 			roomItem += '   <div class="room-info" id="roomInfo">'
 			roomItem += '       <h3>' + roomName + '</h3>'
 			roomItem += '   </div>'
@@ -90,10 +102,11 @@ submitBtn.onclick = function() {
 			roomItem += '</div>'
 
 			roomList.insertAdjacentHTML('beforeend', roomItem);
-			
+
 			const element = document.querySelector('[data-room="' + roomName + '"]');
 			element.addEventListener("click", function() {
-				common.sendAjax('post', '/api/enterRoom', data, function(response, xhr) {})
+				common.sendAjax('post', '/api/enterRoom', data, function(response, xhr) { })
+				sessionStorage.setItem('roomSeq', $(this).find('input[type="hidden"]').attr('id'));
 				window.location.href = '/webview/chat/rooms?roomName=' + roomName;
 			});
 		} else {

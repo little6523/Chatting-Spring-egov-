@@ -31,6 +31,7 @@
 			<div class="room-list" id="roomList">
 				<c:forEach items="${rooms}" var="room">
 					<div class="room-item" data-room="${room.name}">
+						<input type="hidden" id="${room.seq}"/>
 						<div class="room-info" id="roomInfo">
 							<h3>${room.name}</h3>
 						</div>

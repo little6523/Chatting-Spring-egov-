@@ -1,7 +1,16 @@
 package chat.api.service.impl;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.annotation.Resource;
 
@@ -13,7 +22,6 @@ import chat.api.mapper.ChatApiMapper;
 import chat.api.service.ChatApiService;
 import chat.socket.ChattingRoomManager;
 import chat.socket.Room;
-import chat.socket.User;
 
 @Service("ChatApiService")
 public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatApiService{
@@ -23,6 +31,8 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
 	
 	@Autowired
 	private ChattingRoomManager chattingRoomManager;
+	
+	private static final String IMAGE_DIR = "C:/ChattingProfileImages/";
 	
 	@Override
 	public Map<String, Object> login(Map<String, Object> body) {
@@ -35,7 +45,68 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
 	}
 	
 	@Override
-	public int createRoom(Map<String, Object> body) {
+	public String getImage(Map<String, Object> body) {
+        try {
+        	String name = (String) body.get("nickname");
+        	
+            Path imagePath = Paths.get(IMAGE_DIR + name + ".jpg");
+            byte[] imageBytes = Files.readAllBytes(imagePath);
+            
+            return Base64.getEncoder().encodeToString(imageBytes);
+        } catch (IOException e) {
+            return "이미지 읽기 오류";
+        }
+	}
+
+	@Override
+	public void postImage(String image, String oldNickname, String newNickname) {
+        try {
+            // 디렉토리 없으면 생성
+            Path path = Paths.get(IMAGE_DIR);
+            if (Files.notExists(path)) {
+                Files.createDirectories(path);
+            }
+            
+            byte[] decodedBytes = Base64.getDecoder().decode(image);
+
+            String saveFileName = newNickname + ".jpg";
+            String deleteFileName = oldNickname + ".jpg";
+
+            Path saveFilePath = path.resolve(saveFileName);
+            Path deleteFilePath = path.resolve(deleteFileName);
+
+            Files.write(saveFilePath, decodedBytes);
+            Files.deleteIfExists(deleteFilePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+	}
+	
+	@Override
+	public void changeNickname(String oldNickname, String newNickname) {
+		Map<String, Object> param = new HashMap<>();
+		param.put("oldNickname", oldNickname);
+		param.put("newNickname", newNickname);
+		chatApiMapper.changeNickname(param);
+		
+		Path path = Paths.get(IMAGE_DIR);
+		Path saveFilePath = path.resolve(newNickname);
+		param.clear();
+		param.put("imagePath", saveFilePath.toString());
+		param.put("newNickname", newNickname);
+		chatApiMapper.changeImagePath(param);
+	}
+
+	@Override
+	public void changePassword(String oldNickname, String password) {
+		Map<String, Object> param = new HashMap<>();
+		param.put("oldNickname", oldNickname);
+		param.put("password", password);
+		chatApiMapper.changePassword(param);
+	}
+	
+	@Override
+	public int createChattingRoom(Map<String, Object> body) {
 		String name = (String) body.get("roomName");
 		String userId = (String) body.get("name");
 		
@@ -77,5 +148,22 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
 		param.put("roomSeq", room.get("seq"));
 		chatApiMapper.exitRoom(param);
 		
+	}
+
+	@Override
+	public List<Map<String, Object>> getParticipants(Map<String, Object> body) {
+		Map<String, Object> param = new HashMap<>();
+		param.put("roomSeq", body.get("roomSeq"));
+		List<Map<String, Object>> participants = chatApiMapper.getParticipants(param);
+		
+		param.clear();
+		List<Map<String, Object>> users = new ArrayList<>();
+		for (Map<String, Object> m : participants) {
+			param.put("userSeq", m.get("user_seq"));
+		 	Map<String, Object> user = chatApiMapper.getUserBySeq(param);
+		 	users.add(user);
+		}
+		
+		return users;
 	}
 }
