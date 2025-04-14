@@ -29,10 +29,16 @@
 		name = #{roomName}
 	</select>
 	
+	<select id ="getImagePath">
+		SELECT image
+		FROM users
+		WHERE seq = #{userSeq}
+	</select>
+	
 	<update id="changeImagePath">
 		UPDATE users
 		SET image = #{imagePath}
-		WHERE nickname = #{newNickname}
+		WHERE seq = #{userSeq}
 	</update>
 	
 	<update id="changeNickname">
