@@ -71,7 +71,7 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
             
             byte[] decodedBytes = Base64.getDecoder().decode(image);
 
-            String saveFileName = userSeq + ".jpg";
+            String saveFileName = userSeq;
 
             Path saveFilePath = path.resolve(saveFileName);
 

@@ -116,23 +116,24 @@ function makeChatbox(json) {
 	});
 
 	chatMessages.insertAdjacentHTML('beforeend', message);
+	scrollToBottom();
 }
 
 $(document).ready(function() {
-
 	initParticipants()
 		.then(() => {
 			fetchProfileImage()
 				.then(() => {
 					imageLoadingDone = true;
 					showBufferedMessages();
+					const userSeq = sessionStorage.getItem('seq');
+					document.getElementById("profileImage").src = "data:image/jpg;base64," + ROOM_INFO.profileImages[userSeq];
 				}); // 모든 이미지 fetch 끝날 때까지 기다림
 		})
 		.then(() => {
 			connectSocket(); // 이제 안전하게 소켓 연결
 		});
-
-	document.getElementById("profileImage").src = "data:image/jpg;base64," + ROOM_INFO.profileImages[USER.name];
+	
 	document.getElementById('username').innerText = USER.name;
 
 	document.getElementById('returnButton').addEventListener('click', function() {
@@ -235,4 +236,10 @@ function sendMessage() {
 	chatMessages.insertAdjacentHTML('beforeend', message);
 
 	document.getElementById("messageInput").value = "";  // 입력창 초기화
+	scrollToBottom();
+}
+
+function scrollToBottom() {
+	let chatMessages = document.getElementById("chatMessages");
+	chatMessages.scrollTop = chatMessages.scrollHeight;
 }

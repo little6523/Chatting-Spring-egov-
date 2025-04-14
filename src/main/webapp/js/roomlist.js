@@ -46,6 +46,7 @@ $(document).ready(function() {
 	document.querySelectorAll(".room-item").forEach(room => {
 		room.addEventListener("click", function() {
 			data.roomName = $(this).attr("data-room");
+			data.nickname = sessionStorage.getItem('nickname');
 			common.sendAjax('post', '/api/enterRoom', data, function(response, xhr) { })
 			sessionStorage.setItem('roomSeq', $(this).find('input[type="hidden"]').attr('id'));
 			sessionStorage.setItem('roomname', $(this).attr("data-room"));

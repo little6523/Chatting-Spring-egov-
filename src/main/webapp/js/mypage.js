@@ -39,6 +39,7 @@ $(document).ready(function() {
         
         data = {}
         data.image = str.substring(str.indexOf(',') + 1);
+        data.userSeq = sessionStorage.getItem('seq');
         data.oldNickname = sessionStorage.getItem('nickname');
         data.newNickname = $('#nickname').val();
         data.password = $('#newPassword').val();
@@ -49,6 +50,7 @@ $(document).ready(function() {
 			sessionStorage.setItem('profileImage', str.substring(str.indexOf(',') + 1));
 			$('#newPassword').val('');
 			$('#confirmPassword').val('');
+			alert('정보가 수정되었습니다.');
 		});
     });
     
