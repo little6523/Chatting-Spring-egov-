@@ -28,11 +28,11 @@ window.onclick = function(event) {
 }
 
 $(document).ready(function() {
-	const name = sessionStorage.getItem('nickname');
+	const userSeq = sessionStorage.getItem('seq');
 	data = {}
-	data.nickname = name;
+	data.userSeq = userSeq;
 
-	document.getElementById('username').innerText = name;
+	document.getElementById('username').innerText = sessionStorage.getItem('nickname');
 
 	common.sendAjax('post', '/api/profileImages', data, function(response, xhr) {
 		document.getElementById("profileImage").src = "data:image/jpg;base64," + response.image;
@@ -46,19 +46,10 @@ $(document).ready(function() {
 	document.querySelectorAll(".room-item").forEach(room => {
 		room.addEventListener("click", function() {
 			data.roomName = $(this).attr("data-room");
+			data.nickname = sessionStorage.getItem('nickname');
 			common.sendAjax('post', '/api/enterRoom', data, function(response, xhr) { })
 			sessionStorage.setItem('roomSeq', $(this).find('input[type="hidden"]').attr('id'));
 			sessionStorage.setItem('roomname', $(this).attr("data-room"));
-			// 같은 채팅방에 참여 중인 참가자 리스트 얻기
-			data = {}
-			data.roomSeq = $(this).attr("data-room");
-			common.sendAjax('post', '/api/participants', data, function(response, xhr) {
-				users = {}
-				response.participants.forEach(participant => {
-					users[participant.seq] = participant.nickname;
-				});
-				sessionStorage.setItem('users', users);
-			})
 			window.location.href = '/webview/chat/rooms?roomName=' + $(this).attr("data-room");
 		});
 	});

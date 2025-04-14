@@ -11,7 +11,7 @@ public interface ChatApiService {
 	
 	public String getImage(Map<String, Object> body);
 	
-	public void postImage(String image, String oldNickname, String newNickname);
+	public void postImage(String image, String oldNickname);
 
 	public int createChattingRoom(Map<String, Object> body);
 

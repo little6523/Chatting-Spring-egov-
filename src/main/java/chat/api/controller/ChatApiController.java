@@ -42,15 +42,16 @@ public class ChatApiController {
 	@PostMapping("/mypage/update")
 	public ResponseEntity<Map<String, Object>> updateProfile(@RequestBody Map<String, Object> body) {
 		String image = (String) body.get("image");
+		String userSeq = (String) body.get("userSeq");
 		String oldNickname = (String) body.get("oldNickname");
 		String newNickname = (String) body.get("newNickname");
 		String password = (String) body.get("password");
 		
 		if (image != null && !"".equals(image)) {
-			chatApiService.postImage(image, oldNickname, newNickname);
+			chatApiService.postImage(image, userSeq);
 		}
 		
-		if (password != null) {
+		if (password != null && !"".equals(password)) {
 			chatApiService.changePassword(oldNickname, password);
 		}
 		

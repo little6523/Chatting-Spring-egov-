@@ -1,3 +1,4 @@
+// 새로고침 F5 방지
 window.addEventListener('beforeunload', (event) => {
 	// 표준에 따라 기본 동작 방지
 	event.preventDefault();
@@ -14,29 +15,46 @@ const USER = {
 const ROOM_INFO = {
 	roomSeq: sessionStorage.getItem('roomSeq'),
 	roomName: document.getElementById('roomName').innerText,
-	users: {},
-	currentUsers: [],
+	users: {},   // 소켓은 연결되어있지 않으나 채팅방에 참여중인 유저
+	currentUsers: [],   // 현재 소켓 연결된 유저 
 	profileImages: {}
 }
 
-function fetchProfileImage(username) {
+function initParticipants() {
 	return new Promise((resolve, reject) => {
-		const data = { name: username };
-		common.sendAjax('post', '/api/profileImages', data, (response, xhr) => {
-			if (!ROOM_INFO.profileImages.hasOwnProperty(username) || ROOM_INFO.profileImages[username] != response.image) {
-				ROOM_INFO.profileImages[username] = response.image;
-			}
-			resolve(username); // 이 사용자 이미지 처리가 끝나면 resolve
-		});
+		data = {}
+		data.roomSeq = sessionStorage.getItem('roomSeq');
+		common.sendAjax('post', '/api/participants', data, function(response, xhr) {
+			response.participants.forEach(participant => {
+				ROOM_INFO.users[participant.seq] = participant.nickname;
+			});
+			resolve();
+		})
 	})
 }
 
+// 서버로 프로필 이미지를 요청하는 메소드
+function fetchProfileImage() {
+	const promises = Object.keys(ROOM_INFO.users).map(seq => {
+		return new Promise((resolve, reject) => {
+			const data = { userSeq: seq };
+			common.sendAjax('post', '/api/profileImages', data, (response, xhr) => {
+				if (!ROOM_INFO.profileImages.hasOwnProperty(seq) || ROOM_INFO.profileImages[seq] != response.image) {
+					ROOM_INFO.profileImages[seq] = response.image;
+				}
+				resolve(); // 반드시 이 안에서 resolve!
+			});
+		});
+	});
+	return Promise.all(promises);
+}
+
+// 채팅 참가자를 업데이트하는 메소드
 function updateParticipants(username, type) {
 	const participantsList = document.getElementById("participantsList");
 	if (type == 'in') {
 		ROOM_INFO.currentUsers.push(username);
 
-		// 채팅 참가자 목록 업데이트
 		let userList = "";
 
 		if (username == USER.name) {
@@ -46,7 +64,6 @@ function updateParticipants(username, type) {
 		}
 		participantsList.insertAdjacentHTML('beforeend', userList);
 
-		// 채팅 참가자 프로필 이미지 업데이트
 		if (USER.name != username) {
 			fetchProfileImage(username)
 				.then((username) => {
@@ -70,37 +87,54 @@ function updateParticipants(username, type) {
 	document.getElementById("userNumber").textContent = ROOM_INFO.currentUsers.length;
 }
 
-function makeChatbox(username, chat) {
-	/*	let chatMessages = document.getElementById("chatMessages");*/
+// 채팅 말풍선을 추가하는 메소드
+function makeChatbox(json) {
+	let chatMessages = document.getElementById("chatMessages");
 	let message = "";
 
-	let profile = "<div class='mini-profile'>";
-	profile += "<img src='data:image/jpg;base64," + ROOM_INFO.profileImages[username] + "' alt='프로필' class='profile-img'>";
-	profile += "<span class='username' id='username'>" + username + "</span>";
-	profile += "</div>"
+	let lines = json.message.split('\n');
+	lines.forEach((line, index) => {
+		if (line == '') return;
+		let chat = line.split(':');
+		let profile = "<div class='mini-profile'>";
+		profile += "<img src='data:image/jpg;base64," + ROOM_INFO.profileImages[chat[0]] + "' alt='프로필' class='profile-img'>";
+		profile += "<span class='username' id='username'>" + ROOM_INFO.users[chat[0]] + "</span>";
+		profile += "</div>"
 
-	if (username == USER.name) {
-		message += "<div class='messageBox sent'>";
-		message += profile;
-		let selfMessage = "<div class='message sent'>" + chat + "</div>";
-		message += selfMessage;
-	} else {
-		message += "<div class='messageBox received'>";
-		message += profile;
-		let newMessage = "<div class='message received'>" + chat + "</div>";
-		message += newMessage;
-	}
-	message += "</div>"
+		if (chat[0] == sessionStorage.getItem('seq')) {
+			message += "<div class='messageBox sent'>";
+			message += profile;
+			let selfMessage = "<div class='message sent'>" + chat[1] + "</div>";
+			message += selfMessage;
+		} else {
+			message += "<div class='messageBox received'>";
+			message += profile;
+			let newMessage = "<div class='message received'>" + chat[1] + "</div>";
+			message += newMessage;
+		}
+		message += "</div>"
+	});
 
-	return message;
+	chatMessages.insertAdjacentHTML('beforeend', message);
+	scrollToBottom();
 }
 
 $(document).ready(function() {
-	ROOM_INFO.profileImages[USER.name] = sessionStorage.getItem('profileImage');
-	document.getElementById("profileImage").src = "data:image/jpg;base64," + ROOM_INFO.profileImages[USER.name];
-	document.getElementById('username').innerText = USER.name;
+	initParticipants()
+		.then(() => {
+			fetchProfileImage()
+				.then(() => {
+					imageLoadingDone = true;
+					showBufferedMessages();
+					const userSeq = sessionStorage.getItem('seq');
+					document.getElementById("profileImage").src = "data:image/jpg;base64," + ROOM_INFO.profileImages[userSeq];
+				}); // 모든 이미지 fetch 끝날 때까지 기다림
+		})
+		.then(() => {
+			connectSocket(); // 이제 안전하게 소켓 연결
+		});
 	
-	ROOM_INFO.users = sessionStorage.getItem('users');
+	document.getElementById('username').innerText = USER.name;
 
 	document.getElementById('returnButton').addEventListener('click', function() {
 		if (confirm('정말로 채팅방을 나가시겠습니까?')) {
@@ -110,20 +144,30 @@ $(document).ready(function() {
 			window.location.href = '/webview/chat';
 		}
 	});
-	
+
 	document.getElementById('leaveButton').addEventListener('click', function() {
 		if (confirm('정말로 채팅방을 \'탈퇴\'하시겠습니까? (기존의 채팅 내용은 사라집니다.)')) {
 			data = {}
 			data.nickname = sessionStorage.getItem('nickname');
 			data.roomName = sessionStorage.getItem('roomname');
-			common.sendAjax('post', '/api/exitRoom', data, function(response, xhr) {})
+			common.sendAjax('post', '/api/exitRoom', data, function(response, xhr) { })
 			// 웹소켓 연결 종료
 			SOCKET.socket.close();
 			// 메인 페이지로 리다이렉트
 			window.location.href = '/webview/chat';
 		}
 	});
+})
 
+let messageBuffer = [];
+let imageLoadingDone = false;
+
+function showBufferedMessages() {
+	messageBuffer.forEach(msg => makeChatbox(msg));
+	messageBuffer = [];
+}
+
+function connectSocket() {
 	SOCKET.connect(document.getElementById('roomName').innerText).then(() => {
 		SOCKET.init(
 			// onopen
@@ -156,25 +200,11 @@ $(document).ready(function() {
 				}
 
 				if (json.hasOwnProperty("message")) {
-					let chatMessages = document.getElementById("chatMessages");
-					let message = "";
-
-					// 채팅 참여 후 채팅 한 번씩 전송받을 때
-					if (json.message.length == 1) {
-						message += makeChatbox(ROOM_INFO.users[parseInt(userName)], json.message.message);
+					if (!imageLoadingDone) {
+						messageBuffer.push(json);
+						return
 					}
-
-					// 저장된 채팅 불러올 때 (저장된 채팅이 1개일 때는 위의 분기문 통해도 상관없음)
-					if (json.message.length > 1) {
-						let lines = json.message.split('\n');
-						lines.forEach((line, index) => {
-							if (line == '') return;
-							let chat = line.split(':');
-							message += makeChatbox(ROOM_INFO.users[parseInt(chat[0])], chat[1]);
-						})
-					}
-
-					chatMessages.insertAdjacentHTML('beforeend', message);
+					makeChatbox(json);
 				}
 			},
 
@@ -184,19 +214,19 @@ $(document).ready(function() {
 			}
 		)
 	})
-})
+}
 
 function sendMessage() {
+	const userSeq = sessionStorage.getItem('seq')
 	data = {};
-	data.userName = USER.name;
 	data.roomName = USER.roomName;
-	data.message = sessionStorage.getItem('seq') + ":" + document.getElementById("messageInput").value;  // 입력된 메시지 가져오기
+	data.message = userSeq + ":" + document.getElementById("messageInput").value;  // 입력된 메시지 가져오기
 	SOCKET.socket.send(JSON.stringify(data));  // 메시지 전송
 
 	let message = "<div class='messageBox sent'>"
 	let profile = "<div class='mini-profile'>";
-	profile += "<img src='data:image/jpg;base64," + ROOM_INFO.profileImages[data.userName] + "' alt='프로필' class='profile-img'>";
-	profile += "<span class='username' id='username'>" + data.userName + "</span>";
+	profile += "<img src='data:image/jpg;base64," + ROOM_INFO.profileImages[userSeq] + "' alt='프로필' class='profile-img'>";
+	profile += "<span class='username' id='username'>" + ROOM_INFO.users[userSeq] + "</span>";
 	profile += "</div>"
 	message += profile;
 	let selfMessage = "<div class='message sent'>" + document.getElementById("messageInput").value + "</div>";
@@ -206,4 +236,10 @@ function sendMessage() {
 	chatMessages.insertAdjacentHTML('beforeend', message);
 
 	document.getElementById("messageInput").value = "";  // 입력창 초기화
+	scrollToBottom();
+}
+
+function scrollToBottom() {
+	let chatMessages = document.getElementById("chatMessages");
+	chatMessages.scrollTop = chatMessages.scrollHeight;
 }

@@ -47,9 +47,11 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
 	@Override
 	public String getImage(Map<String, Object> body) {
         try {
-        	String name = (String) body.get("nickname");
+        	Map<String, Object> param = new HashMap<String, Object>();
+        	param.put("userSeq", Integer.parseInt((String) body.get("userSeq")));
+        	String image = chatApiMapper.getImagePath(param);
         	
-            Path imagePath = Paths.get(IMAGE_DIR + name + ".jpg");
+            Path imagePath = Paths.get(image + ".jpg");
             byte[] imageBytes = Files.readAllBytes(imagePath);
             
             return Base64.getEncoder().encodeToString(imageBytes);
@@ -59,7 +61,7 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
 	}
 
 	@Override
-	public void postImage(String image, String oldNickname, String newNickname) {
+	public void postImage(String image, String userSeq) {
         try {
             // 디렉토리 없으면 생성
             Path path = Paths.get(IMAGE_DIR);
@@ -69,14 +71,16 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
             
             byte[] decodedBytes = Base64.getDecoder().decode(image);
 
-            String saveFileName = newNickname + ".jpg";
-            String deleteFileName = oldNickname + ".jpg";
+            String saveFileName = userSeq;
 
             Path saveFilePath = path.resolve(saveFileName);
-            Path deleteFilePath = path.resolve(deleteFileName);
 
             Files.write(saveFilePath, decodedBytes);
-            Files.deleteIfExists(deleteFilePath);
+            
+            Map<String, Object> param = new HashMap<>();
+    		param.put("imagePath", saveFilePath.toString());
+    		param.put("userSeq", userSeq);
+    		chatApiMapper.changeImagePath(param);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -88,13 +92,6 @@ public class ChatApiServiceImpl extends EgovAbstractServiceImpl implements ChatA
 		param.put("oldNickname", oldNickname);
 		param.put("newNickname", newNickname);
 		chatApiMapper.changeNickname(param);
-		
-		Path path = Paths.get(IMAGE_DIR);
-		Path saveFilePath = path.resolve(newNickname);
-		param.clear();
-		param.put("imagePath", saveFilePath.toString());
-		param.put("newNickname", newNickname);
-		chatApiMapper.changeImagePath(param);
 	}
 
 	@Override

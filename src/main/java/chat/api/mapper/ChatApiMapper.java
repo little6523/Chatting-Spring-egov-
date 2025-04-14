@@ -14,6 +14,8 @@ public interface ChatApiMapper {
 	
 	public Map<String, Object> getUserByNickname(Map<String, Object> param);
 	
+	public String getImagePath(Map<String, Object> param);
+	
 	public void changeImagePath(Map<String, Object> param);
 	
 	public void changeNickname(Map<String, Object> param);
