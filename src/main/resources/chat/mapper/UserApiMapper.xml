@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="chat.api.mapper.UserApiMapper">
+	<select id="login" resultType="map">
+		SELECT *
+		FROM users
+		WHERE id = #{id}
+		and password = #{password}
+	</select>
+
+	<insert id="signup" useGeneratedKeys="true" keyProperty="seq">
+		INSERT INTO users (id, password, nickname, image)
+		VALUE
+		(#{id}, #{password}, #{nickname}, #{image});
+	</insert>
+
+	<select id="getUserBySeq" resultType="map">
+		SELECT *
+		FROM users
+		WHERE seq
+		= #{userSeq}
+	</select>
+
+	<select id="getUserById" resultType="map">
+		SELECT *
+		FROM users
+		WHERE id =
+		#{id}
+	</select>
+
+	<select id="getUserByNickname" resultType="map">
+		SELECT *
+		FROM users
+		WHERE nickname = #{nickname}
+	</select>
+
+	<select id="getImagePath">
+		SELECT image
+		FROM users
+		WHERE seq = #{userSeq}
+	</select>
+
+	<update id="changeImagePath">
+		UPDATE users
+		SET image = #{imagePath}
+		WHERE seq =
+		#{userSeq}
+	</update>
+
+	<update id="changeNickname">
+		UPDATE users
+		SET nickname = #{newNickname}
+		WHERE
+		nickname = #{oldNickname}
+	</update>
+
+	<update id="changePassword">
+		UPDATE users
+		SET password = #{password}
+		WHERE nickname
+		= #{oldNickname}
+	</update>
+</mapper>
