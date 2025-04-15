@@ -1,5 +1,6 @@
 package chat.api.controller;
 
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,7 +53,7 @@ public class UserApiController {
 			idCheck = userApiService.checkIdDuplication(body);
 			
 			if (!idCheck) {
-				result.put("result", "동일한 id가 존재합니다.");
+				result.put("result", "동일한 아이디가 존재합니다.");
 				result.put("check", "fail");
 				result.put("rspCode", "1");
 			} else {
@@ -84,6 +85,18 @@ public class UserApiController {
 		result.put("rspCode", "2");
 		
 		return null;
+	}
+	
+	@PostMapping("/signup")
+	public ResponseEntity<Map<String, Object>> signup(@RequestBody Map<String, Object> body) {
+		BigInteger userSeq = userApiService.signup(body);
+		userApiService.postImage((String) body.get("image"), String.valueOf(userSeq));
+		
+		HttpHeaders headers = new HttpHeaders();
+		Map<String, Object> result = new HashMap<String, Object>();
+		result.put("rspCode", "1");
+		result.put("result", "성공");
+		return ResponseEntity.ok().headers(headers).body(result);
 	}
 	
 	// 프로필 이미지를 따로 불러오기 위한 메소드

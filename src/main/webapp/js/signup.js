@@ -13,6 +13,7 @@ $(document).ready(function() {
 		data.id = userId;
 		common.sendAjax('post', '/api/checkDuplication', data, function(response, xhr) {
 			if (response.check == 'success') {
+				isIdChecked = true;
 				$('#idError').text(response.result).css('color', '#28a745');
 			} else {
 				$('#idError').text(response.result).css('color', '#dc3545');
@@ -31,6 +32,7 @@ $(document).ready(function() {
 		data.nickname = nickname;
 		common.sendAjax('post', '/api/checkDuplication', data, function(response, xhr) {
 			if (response.check == 'success') {
+				isNicknameChecked = true;
 				$('#nicknameError').text(response.result).css('color', '#28a745');
 			} else {
 				$('#nicknameError').text(response.result).css('color', '#dc3545');
@@ -41,7 +43,7 @@ $(document).ready(function() {
 	// ID 입력 필드 변경 시 중복 확인 초기화
 	$('#userId').on('input', function() {
 		isIdChecked = false;
-		$('#idError').text('아이디 중복 확인이 필요합니다.').css('color', '#dc3545');
+		$('#idError').text('');
 	});
 
 	// 닉네임 입력 필드 변경 시 중복 확인 초기화
@@ -88,16 +90,21 @@ $(document).ready(function() {
 	});
 
 	// 폼 제출
-	$('#signupForm').submit(function(e) {
+	$('#signupButton').click(function(e) {
 		e.preventDefault();
+		
+		const password = $('#password').val();
+		const confirmPassword = $('#confirmPassword').val();
 
-        const formData = new FormData();
-        formData.append('userId', $('#userId').val().trim());
-        formData.append('password', $('#password').val());
-        formData.append('nickname', $('#nickname').val().trim());
-        if (selectedFile) {
-            formData.append('profileImage', selectedFile);
-        }
+		data = {}
+		data.id = $('#userId').val().trim();
+		data.password = $('#password').val();
+		data.nickname = $('#nickname').val().trim();
+		data.image = ''
+		if (selectedFile) {
+			let str = $('#currentProfile').attr('src');
+			data.image = str.substring(str.indexOf(',') + 1);
+		}
 
 		// 필수 필드 검증
 		if (!userId || !password || !confirmPassword) {
@@ -111,7 +118,6 @@ $(document).ready(function() {
 			return;
 		}
 
-		// 비밀번호 일치 검증
 		if (password !== confirmPassword) {
 			alert('비밀번호가 일치하지 않습니다.');
 			return;
@@ -123,21 +129,10 @@ $(document).ready(function() {
 			return;
 		}
 
-		// 회원가입 요청
-        $.ajax({
-            url: '/api/signup',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function(response) {
-                alert('회원가입이 완료되었습니다.');
-                window.location.href = '/login';
-            },
-            error: function(xhr) {
-                alert('회원가입 중 오류가 발생했습니다.');
-            }
-        });
+		common.sendAjax('post', '/api/signup', data, function(response, xhr) {
+			alert('회원가입이 완료되었습니다.');
+			window.location.href = '/webview/login';
+		})
 	});
 
 	// 돌아가기 버튼

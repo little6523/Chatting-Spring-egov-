@@ -1,6 +1,7 @@
 package chat.api.service.impl;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -42,6 +43,18 @@ public class UserApiServiceImpl extends EgovAbstractServiceImpl implements UserA
 
 		return map;
 	}
+	
+	@Override
+	public BigInteger signup(Map<String, Object> body) {
+		Map<String, Object> param = new HashMap<>();
+		param.put("id", body.get("id"));
+		param.put("password", body.get("password"));
+		param.put("nickname", body.get("nickname"));
+		param.put("image", "");
+		userApiMapper.signup(param);
+		
+		return (BigInteger) param.get("seq");
+	}
 
 	@Override
 	public boolean checkIdDuplication(Map<String, Object> body) {
@@ -64,7 +77,7 @@ public class UserApiServiceImpl extends EgovAbstractServiceImpl implements UserA
 			param.put("userSeq", Integer.parseInt((String) body.get("userSeq")));
 			String image = userApiMapper.getImagePath(param);
 
-			Path imagePath = Paths.get(image + ".jpg");
+			Path imagePath = Paths.get(image);
 			byte[] imageBytes = Files.readAllBytes(imagePath);
 
 			return Base64.getEncoder().encodeToString(imageBytes);
@@ -84,7 +97,7 @@ public class UserApiServiceImpl extends EgovAbstractServiceImpl implements UserA
 
 			byte[] decodedBytes = Base64.getDecoder().decode(image);
 
-			String saveFileName = userSeq;
+			String saveFileName = userSeq + ".jpg";
 
 			Path saveFilePath = path.resolve(saveFileName);
 
