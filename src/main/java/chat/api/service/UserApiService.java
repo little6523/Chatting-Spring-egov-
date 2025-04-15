@@ -1,0 +1,16 @@
+package chat.api.service;
+
+import java.util.Map;
+
+public interface UserApiService {
+
+	public Map<String, Object> login(Map<String, Object> body);
+	
+	public String getImage(Map<String, Object> body);
+	
+	public void postImage(String image, String oldNickname);
+	
+	public void changeNickname(String oldNickname, String newNickname);
+
+	public void changePassword(String oldNickname, String password);
+}
