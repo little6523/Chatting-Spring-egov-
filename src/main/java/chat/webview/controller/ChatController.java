@@ -21,22 +21,6 @@ public class ChatController {
 	@Resource(name = "ChatService")
 	private ChatService chatService;
 	
-	@GetMapping("/index")
-	public String index() {
-		System.out.println("hello");
-		return "index";
-	}
-	
-	@GetMapping("/signup")
-	public String signup() {
-		return "signup";
-	}
-	
-	@GetMapping("/login")
-	public String login() {
-		return "login";
-	}
-	
 	@GetMapping("/chat")
 	public String chatRoom(Model model) {
 	    List<Map<String, Object>> rooms = chatService.getChattingRooms();
@@ -51,11 +35,5 @@ public class ChatController {
         System.out.println(clientIP + ":" + clientPort);
         model.addAttribute("roomName", roomName);
 		return "client";
-	}
-	
-	@GetMapping("/mypage")
-	public String myPage(@RequestParam("nickname") String nickname, Model model) {
-		model.addAttribute("nicknme", nickname);
-		return "mypage";
 	}
 }
