@@ -15,6 +15,12 @@
 		FROM users
 		WHERE seq = #{userSeq}
 	</select>
+	
+	<select id="getUserById" resultType="map">
+		SELECT *
+		FROM users
+		WHERE id = #{id}
+	</select>
 
 	<select id="getUserByNickname" resultType="map">
 		SELECT *

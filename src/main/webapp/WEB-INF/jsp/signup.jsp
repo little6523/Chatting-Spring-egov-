@@ -17,6 +17,13 @@
                 <h1 class="app-title">회원가입</h1>
             </div>
             <form id="signupForm" class="signup-form">
+                <div class="profile-section">
+                    <div class="profile-image-container">
+                        <img id="currentProfile" src="/images/default-profile.png" alt="프로필 이미지" class="profile-image">
+                        <input type="file" id="profileImage" name="profileImage" accept="image/*" style="display: none;">
+                        <button type="button" id="changeProfileBtn" class="profile-button">프로필 이미지 선택</button>
+                    </div>
+                </div>
                 <div class="input-group">
                     <label for="userId">아이디 *</label>
                     <div class="input-with-button">
@@ -42,7 +49,7 @@
                     </div>
                     <div id="nicknameError" class="error-message"></div>
                 </div>
-                <button type="submit" id="signupButton" class="signup-button">가입하기</button>
+                <button id="signupButton" class="signup-button">가입하기</button>
                 <button type="button" id="returnButton" class="cancel-button">돌아가기</button>
             </form>
         </div>

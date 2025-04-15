@@ -26,65 +26,79 @@ import chat.socket.ChattingRoomManager;
 import chat.socket.Room;
 
 @Service("UserApiService")
-public class UserApiServiceImpl extends EgovAbstractServiceImpl implements UserApiService{
-	
+public class UserApiServiceImpl extends EgovAbstractServiceImpl implements UserApiService {
+
 	private static final String IMAGE_DIR = "C:/ChattingProfileImages/";
 
 	@Resource(name = "UserApiMapper")
 	private UserApiMapper userApiMapper;
-	
+
 	@Override
 	public Map<String, Object> login(Map<String, Object> body) {
 		Map<String, Object> map = userApiMapper.login(body);
 		if (map == null) {
 			return null;
 		}
-		
+
 		return map;
 	}
-	
+
+	@Override
+	public boolean checkIdDuplication(Map<String, Object> body) {
+		Map<String, Object> user = userApiMapper.getUserById(body);
+		if (user == null) return true;
+		return false;
+	}
+
+	@Override
+	public boolean checkNicknameDuplication(Map<String, Object> body) {
+		Map<String, Object> user = userApiMapper.getUserByNickname(body);
+		if (user == null) return true;
+		return false;
+	}
+
 	@Override
 	public String getImage(Map<String, Object> body) {
-        try {
-        	Map<String, Object> param = new HashMap<String, Object>();
-        	param.put("userSeq", Integer.parseInt((String) body.get("userSeq")));
-        	String image = userApiMapper.getImagePath(param);
-        	
-            Path imagePath = Paths.get(image + ".jpg");
-            byte[] imageBytes = Files.readAllBytes(imagePath);
-            
-            return Base64.getEncoder().encodeToString(imageBytes);
-        } catch (IOException e) {
-            return "이미지 읽기 오류";
-        }
+		try {
+			Map<String, Object> param = new HashMap<String, Object>();
+			param.put("userSeq", Integer.parseInt((String) body.get("userSeq")));
+			String image = userApiMapper.getImagePath(param);
+
+			Path imagePath = Paths.get(image + ".jpg");
+			byte[] imageBytes = Files.readAllBytes(imagePath);
+
+			return Base64.getEncoder().encodeToString(imageBytes);
+		} catch (IOException e) {
+			return "이미지 읽기 오류";
+		}
 	}
 
 	@Override
 	public void postImage(String image, String userSeq) {
-        try {
-            // 디렉토리 없으면 생성
-            Path path = Paths.get(IMAGE_DIR);
-            if (Files.notExists(path)) {
-                Files.createDirectories(path);
-            }
-            
-            byte[] decodedBytes = Base64.getDecoder().decode(image);
+		try {
+			// 디렉토리 없으면 생성
+			Path path = Paths.get(IMAGE_DIR);
+			if (Files.notExists(path)) {
+				Files.createDirectories(path);
+			}
 
-            String saveFileName = userSeq;
+			byte[] decodedBytes = Base64.getDecoder().decode(image);
 
-            Path saveFilePath = path.resolve(saveFileName);
+			String saveFileName = userSeq;
 
-            Files.write(saveFilePath, decodedBytes);
-            
-            Map<String, Object> param = new HashMap<>();
-    		param.put("imagePath", saveFilePath.toString());
-    		param.put("userSeq", userSeq);
-    		userApiMapper.changeImagePath(param);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+			Path saveFilePath = path.resolve(saveFileName);
+
+			Files.write(saveFilePath, decodedBytes);
+
+			Map<String, Object> param = new HashMap<>();
+			param.put("imagePath", saveFilePath.toString());
+			param.put("userSeq", userSeq);
+			userApiMapper.changeImagePath(param);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
-	
+
 	@Override
 	public void changeNickname(String oldNickname, String newNickname) {
 		Map<String, Object> param = new HashMap<>();

@@ -39,6 +39,53 @@ public class UserApiController {
 		return ResponseEntity.ok().headers(headers).body(result);
 	}
 	
+	// ID, 닉네임 중복 확인
+	@PostMapping("/checkDuplication")
+	public ResponseEntity<Map<String, Object>> checkDuplication(@RequestBody Map<String, Object> body) {
+		HttpHeaders headers = new HttpHeaders();
+		Map<String, Object> result = new HashMap<>();
+		
+		boolean idCheck = false;
+		boolean nicknameCheck = false;
+		
+		if (body.get("id") != null) {
+			idCheck = userApiService.checkIdDuplication(body);
+			
+			if (!idCheck) {
+				result.put("result", "동일한 id가 존재합니다.");
+				result.put("check", "fail");
+				result.put("rspCode", "1");
+			} else {
+				result.put("result", "사용 가능한 아이디입니다.");
+				result.put("check", "success");
+				result.put("rspCode", "1");
+			}
+			
+			return ResponseEntity.ok().headers(headers).body(result);
+		}
+		
+		if (body.get("nickname") != null) {
+			nicknameCheck = userApiService.checkNicknameDuplication(body);
+			
+			if (!nicknameCheck) {
+				result.put("result", "동일한 닉네임이 존재합니다.");
+				result.put("check", "fail");
+				result.put("rspCode", "1");
+			} else {
+				result.put("result", "사용 가능한 닉네임입니다.");
+				result.put("check", "success");
+				result.put("rspCode", "1");
+			}
+			
+			return ResponseEntity.ok().headers(headers).body(result);
+		}
+		
+		result.put("reuslt", "error");
+		result.put("rspCode", "2");
+		
+		return null;
+	}
+	
 	// 프로필 이미지를 따로 불러오기 위한 메소드
 	@PostMapping("/profileImages")
 	public ResponseEntity<Map<String, Object>> getImage(@RequestBody Map<String, Object> body) {
