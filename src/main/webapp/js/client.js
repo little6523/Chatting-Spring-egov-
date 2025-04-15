@@ -66,9 +66,7 @@ function updateParticipants(username, type) {
 
 		if (USER.name != username) {
 			fetchProfileImage(username)
-				.then((username) => {
-					console.log(username);
-				})
+				.then((username) => {})
 		}
 	}
 
@@ -133,7 +131,7 @@ $(document).ready(function() {
 		.then(() => {
 			connectSocket(); // 이제 안전하게 소켓 연결
 		});
-	
+
 	document.getElementById('username').innerText = USER.name;
 
 	document.getElementById('returnButton').addEventListener('click', function() {
@@ -215,6 +213,13 @@ function connectSocket() {
 		)
 	})
 }
+
+document.getElementById('messageInput').addEventListener('keydown', function(event) {
+	if (event.key === 'Enter') {
+		event.preventDefault();
+		document.getElementById('sendButton').click();
+	}
+});
 
 function sendMessage() {
 	const userSeq = sessionStorage.getItem('seq')
