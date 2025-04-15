@@ -9,17 +9,25 @@
 		WHERE id = #{id}
 		and password = #{password}
 	</select>
-	
+
+	<insert id="signup" useGeneratedKeys="true" keyProperty="seq">
+		INSERT INTO users (id, password, nickname, image)
+		VALUE
+		(#{id}, #{password}, #{nickname}, #{image});
+	</insert>
+
 	<select id="getUserBySeq" resultType="map">
 		SELECT *
 		FROM users
-		WHERE seq = #{userSeq}
+		WHERE seq
+		= #{userSeq}
 	</select>
-	
+
 	<select id="getUserById" resultType="map">
 		SELECT *
 		FROM users
-		WHERE id = #{id}
+		WHERE id =
+		#{id}
 	</select>
 
 	<select id="getUserByNickname" resultType="map">
@@ -27,28 +35,31 @@
 		FROM users
 		WHERE nickname = #{nickname}
 	</select>
-	
-	<select id ="getImagePath">
+
+	<select id="getImagePath">
 		SELECT image
 		FROM users
 		WHERE seq = #{userSeq}
 	</select>
-	
+
 	<update id="changeImagePath">
 		UPDATE users
 		SET image = #{imagePath}
-		WHERE seq = #{userSeq}
+		WHERE seq =
+		#{userSeq}
 	</update>
-	
+
 	<update id="changeNickname">
 		UPDATE users
 		SET nickname = #{newNickname}
-		WHERE nickname = #{oldNickname}
+		WHERE
+		nickname = #{oldNickname}
 	</update>
-	
+
 	<update id="changePassword">
 		UPDATE users
 		SET password = #{password}
-		WHERE nickname = #{oldNickname}
+		WHERE nickname
+		= #{oldNickname}
 	</update>
 </mapper>
