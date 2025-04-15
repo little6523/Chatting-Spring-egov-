@@ -26,6 +26,7 @@
                     <input type="password" id="userPassword" name="userPassword" placeholder="비밀번호를 입력하세요" required>
                 </div>
                 <button type="submit" class="login-button">로그인</button>
+                <button class="signup-button" id="signupButton">회원가입</button>
             </form>
         </div>
     </div>

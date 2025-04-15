@@ -20,3 +20,7 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     	window.location.href = '/webview/chat';
 	})
 });
+
+document.getElementById('signupButton').addEventListener('click', function() {
+	window.location.href = '/webview/signup'
+})

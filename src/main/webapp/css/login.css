@@ -90,6 +90,17 @@ body {
     transition: background-color 0.3s ease;
 }
 
+.signup-button {
+    background-color: #8180F7;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
 .login-button:hover {
     background-color: #45a049;
 }
