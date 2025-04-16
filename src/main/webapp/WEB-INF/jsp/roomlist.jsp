@@ -18,6 +18,7 @@
 				<span class="username" id="username">사용자 이름</span>
 			</div>
 			<button id="mypageButton" class="mypage-button">마이페이지</button>
+			<button id="logoutButton" class="logout-button">로그아웃</button>
 		</div>
 
 		<!-- 메인 컨텐츠 영역 -->

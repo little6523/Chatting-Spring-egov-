@@ -53,6 +53,11 @@ $(document).ready(function() {
 			window.location.href = '/webview/chat/rooms?roomName=' + $(this).attr("data-room");
 		});
 	});
+	
+	$('#logoutButton').click(function() {
+		sessionStorage.clear();
+		window.location.href = '/webview/login';
+	})
 })
 
 // 채팅방 생성 제출
