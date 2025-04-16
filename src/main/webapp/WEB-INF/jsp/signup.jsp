@@ -19,7 +19,7 @@
             <form id="signupForm" class="signup-form">
                 <div class="profile-section">
                     <div class="profile-image-container">
-                        <img id="currentProfile" src="/images/default-profile.png" alt="프로필 이미지" class="profile-image">
+                        <img id="currentProfile" src="" alt="프로필 이미지" class="profile-image">
                         <input type="file" id="profileImage" name="profileImage" accept="image/*" style="display: none;">
                         <button type="button" id="changeProfileBtn" class="profile-button">프로필 이미지 선택</button>
                     </div>

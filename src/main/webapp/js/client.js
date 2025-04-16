@@ -1,12 +1,3 @@
-// 새로고침 F5 방지
-window.addEventListener('beforeunload', (event) => {
-	// 표준에 따라 기본 동작 방지
-	event.preventDefault();
-
-	// Chrome에서는 returnValue 설정이 필요함
-	event.returnValue = '';
-});
-
 const USER = {
 	name: sessionStorage.getItem('nickname'),
 	roomName: document.getElementById('roomName').innerText,
@@ -16,7 +7,7 @@ const ROOM_INFO = {
 	roomSeq: sessionStorage.getItem('roomSeq'),
 	roomName: document.getElementById('roomName').innerText,
 	users: {},   // 소켓은 연결되어있지 않으나 채팅방에 참여중인 유저
-	currentUsers: [],   // 현재 소켓 연결된 유저 
+	currentUsers: [],   // 현재 소켓 연결된 유저
 	profileImages: {}
 }
 
@@ -33,17 +24,23 @@ function initParticipants() {
 	})
 }
 
-// 서버로 프로필 이미지를 요청하는 메소드
-function fetchProfileImage() {
+// 개별 프로필 이미지를 서버에서 받아오는 함수
+function fetchProfileImage(userSeq) {
+	return new Promise((resolve, reject) => {
+		const data = { userSeq };
+		common.sendAjax('post', '/api/profileImages', data, (response, xhr) => {
+			resolve(response.image);
+		});
+	});
+}
+
+// 여러 유저의 프로필 이미지를 초기화하는 함수
+function initProfileImage() {
 	const promises = Object.keys(ROOM_INFO.users).map(seq => {
-		return new Promise((resolve, reject) => {
-			const data = { userSeq: seq };
-			common.sendAjax('post', '/api/profileImages', data, (response, xhr) => {
-				if (!ROOM_INFO.profileImages.hasOwnProperty(seq) || ROOM_INFO.profileImages[seq] != response.image) {
-					ROOM_INFO.profileImages[seq] = response.image;
-				}
-				resolve(); // 반드시 이 안에서 resolve!
-			});
+		return fetchProfileImage(seq).then(image => {
+			if (!ROOM_INFO.profileImages.hasOwnProperty(seq) || ROOM_INFO.profileImages[seq] !== image) {
+				ROOM_INFO.profileImages[seq] = image;
+			}
 		});
 	});
 	return Promise.all(promises);
@@ -63,11 +60,6 @@ function updateParticipants(username, type) {
 			userList = "<li>" + username + "</li>";
 		}
 		participantsList.insertAdjacentHTML('beforeend', userList);
-
-		if (USER.name != username) {
-			fetchProfileImage(username)
-				.then((username) => {})
-		}
 	}
 
 	if (type == 'out') {
@@ -120,7 +112,7 @@ function makeChatbox(json) {
 $(document).ready(function() {
 	initParticipants()
 		.then(() => {
-			fetchProfileImage()
+			initProfileImage()
 				.then(() => {
 					imageLoadingDone = true;
 					showBufferedMessages();
@@ -140,6 +132,9 @@ $(document).ready(function() {
 			SOCKET.socket.close();
 			// 메인 페이지로 리다이렉트
 			window.location.href = '/webview/chat';
+
+			sessionStorage.removeItem('roomname');
+			sessionStorage.removeItem('roomSeq');
 		}
 	});
 
@@ -153,6 +148,9 @@ $(document).ready(function() {
 			SOCKET.socket.close();
 			// 메인 페이지로 리다이렉트
 			window.location.href = '/webview/chat';
+
+			sessionStorage.removeItem('roomname');
+			sessionStorage.removeItem('roomSeq');
 		}
 	});
 })
@@ -187,12 +185,17 @@ function connectSocket() {
 
 				if (json.hasOwnProperty("newUser")) {
 					updateParticipants(json.newUser.name, 'in');
+					initParticipants()
+						.then((newUser) => {
+							initProfileImage();
+						});
 
 					return;
 				}
 
 				if (json.hasOwnProperty("outUser")) {
 					updateParticipants(json.outUser.name, 'out');
+					initParticipants();
 
 					return;
 				}
