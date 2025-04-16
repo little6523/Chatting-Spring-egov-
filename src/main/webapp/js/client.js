@@ -16,7 +16,7 @@ const ROOM_INFO = {
 	roomSeq: sessionStorage.getItem('roomSeq'),
 	roomName: document.getElementById('roomName').innerText,
 	users: {},   // 소켓은 연결되어있지 않으나 채팅방에 참여중인 유저
-	currentUsers: [],   // 현재 소켓 연결된 유저 
+	currentUsers: [],   // 현재 소켓 연결된 유저
 	profileImages: {}
 }
 
@@ -179,6 +179,7 @@ function connectSocket() {
 				const json = JSON.parse(event.data);
 				if (json.hasOwnProperty("participants")) {
 					json.participants.forEach(participant => {
+						console.log('참가자: ', participant)
 						updateParticipants(participant.name, 'in');
 					})
 

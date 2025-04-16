@@ -1,4 +1,10 @@
 $(document).ready(function() {
+	data = {}
+	data.userSeq = '15';
+	common.sendAjax('post', '/api/profileImages', data, function(response, xhr) {
+		$('#currentProfile').attr('src', 'data:image/jpg;base64,' + response.image);
+	})
+	
 	let isIdChecked = false;
 	let isNicknameChecked = false;
 
@@ -100,11 +106,9 @@ $(document).ready(function() {
 		data.id = $('#userId').val().trim();
 		data.password = $('#password').val();
 		data.nickname = $('#nickname').val().trim();
-		data.image = ''
-		if (selectedFile) {
-			let str = $('#currentProfile').attr('src');
-			data.image = str.substring(str.indexOf(',') + 1);
-		}
+		
+		let str = $('#currentProfile').attr('src');
+		data.image = str.substring(str.indexOf(',') + 1);
 
 		// 필수 필드 검증
 		if (!userId || !password || !confirmPassword) {
