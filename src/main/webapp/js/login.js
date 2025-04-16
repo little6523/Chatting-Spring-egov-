@@ -4,12 +4,6 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     const userId = document.getElementById('userId').value;
     const userPassword = document.getElementById('userPassword').value;
     
-    // 여기에 로그인 검증 로직을 추가하세요
-    console.log('로그인 시도:', {
-        userId: userId,
-        password: userPassword
-    });
-    
     data = {}
     data.id = userId;
     data.password = userPassword;
