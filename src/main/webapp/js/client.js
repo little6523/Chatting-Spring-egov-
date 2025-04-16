@@ -132,6 +132,9 @@ $(document).ready(function() {
 			SOCKET.socket.close();
 			// 메인 페이지로 리다이렉트
 			window.location.href = '/webview/chat';
+
+			sessionStorage.removeItem('roomname');
+			sessionStorage.removeItem('roomSeq');
 		}
 	});
 
@@ -145,6 +148,9 @@ $(document).ready(function() {
 			SOCKET.socket.close();
 			// 메인 페이지로 리다이렉트
 			window.location.href = '/webview/chat';
+
+			sessionStorage.removeItem('roomname');
+			sessionStorage.removeItem('roomSeq');
 		}
 	});
 })
