@@ -6,7 +6,8 @@ const USER = {
 const ROOM_INFO = {
 	roomSeq: sessionStorage.getItem('roomSeq'),
 	roomName: document.getElementById('roomName').innerText,
-	users: {},   // 소켓은 연결되어있지 않으나 채팅방에 참여중인 유저
+	seqToUser: {},   // 소켓은 연결되어있지 않으나 채팅방에 참여중인 유저
+	UserToSeq: {},
 	currentUsers: [],   // 현재 소켓 연결된 유저
 	profileImages: {}
 }
@@ -17,7 +18,8 @@ function initParticipants() {
 		data.roomSeq = sessionStorage.getItem('roomSeq');
 		common.sendAjax('post', '/api/participants', data, function(response, xhr) {
 			response.participants.forEach(participant => {
-				ROOM_INFO.users[participant.seq] = participant.nickname;
+				ROOM_INFO.seqToUser[participant.seq] = participant.nickname;
+				ROOM_INFO.UserToSeq[participant.nickname] = participant.seq;
 			});
 			resolve();
 		})
@@ -35,8 +37,8 @@ function fetchProfileImage(userSeq) {
 }
 
 // 여러 유저의 프로필 이미지를 초기화하는 함수
-function initProfileImage() {
-	const promises = Object.keys(ROOM_INFO.users).map(seq => {
+function initProfileImages() {
+	const promises = Object.keys(ROOM_INFO.seqToUser).map(seq => {
 		return fetchProfileImage(seq).then(image => {
 			if (!ROOM_INFO.profileImages.hasOwnProperty(seq) || ROOM_INFO.profileImages[seq] !== image) {
 				ROOM_INFO.profileImages[seq] = image;
@@ -86,23 +88,40 @@ function makeChatbox(json) {
 	lines.forEach((line, index) => {
 		if (line == '') return;
 		let chat = line.split(':');
-		let profile = "<div class='mini-profile'>";
-		profile += "<img src='data:image/jpg;base64," + ROOM_INFO.profileImages[chat[0]] + "' alt='프로필' class='profile-img'>";
-		profile += "<span class='username' id='username'>" + ROOM_INFO.users[chat[0]] + "</span>";
-		profile += "</div>"
+
+		// 현재 시간 포맷팅
+		let now = new Date();
+		let timeStr = now.getHours().toString().padStart(2, '0') + ':' +
+			now.getMinutes().toString().padStart(2, '0');
 
 		if (chat[0] == sessionStorage.getItem('seq')) {
 			message += "<div class='messageBox sent'>";
+			message += "<div class='message-wrapper'>";
+			let profile = "<div class='mini-profile'>";
+			profile += "<img src='data:image/jpg;base64," + ROOM_INFO.profileImages[chat[0]] + "' alt='프로필' class='profile-img'>";
+			profile += "<span class='username'>" + ROOM_INFO.seqToUser[chat[0]] + "</span>";
+			profile += "</div>";
 			message += profile;
-			let selfMessage = "<div class='message sent'>" + chat[1] + "</div>";
-			message += selfMessage;
+			message += "<div class='message-content'>";
+			message += "<div class='message sent'>" + chat[1] + "</div>";
+			message += "<span class='time'>" + timeStr + "</span>";
+			message += "</div>";
+			message += "</div>";
 		} else {
 			message += "<div class='messageBox received'>";
+			message += "<div class='message-wrapper'>";
+			let profile = "<div class='mini-profile'>";
+			profile += "<img src='data:image/jpg;base64," + ROOM_INFO.profileImages[chat[0]] + "' alt='프로필' class='profile-img'>";
+			profile += "<span class='username'>" + ROOM_INFO.seqToUser[chat[0]] + "</span>";
+			profile += "</div>";
 			message += profile;
-			let newMessage = "<div class='message received'>" + chat[1] + "</div>";
-			message += newMessage;
+			message += "<div class='message-content'>";
+			message += "<div class='message received'>" + chat[1] + "</div>";
+			message += "<span class='time'>" + timeStr + "</span>";
+			message += "</div>";
+			message += "</div>";
 		}
-		message += "</div>"
+		message += "</div>";
 	});
 
 	chatMessages.insertAdjacentHTML('beforeend', message);
@@ -112,7 +131,7 @@ function makeChatbox(json) {
 $(document).ready(function() {
 	initParticipants()
 		.then(() => {
-			initProfileImage()
+			initProfileImages()
 				.then(() => {
 					imageLoadingDone = true;
 					showBufferedMessages();
@@ -155,7 +174,7 @@ $(document).ready(function() {
 	});
 })
 
-let messageBuffer = [];
+let messageBuffer = []
 let imageLoadingDone = false;
 
 function showBufferedMessages() {
@@ -186,9 +205,26 @@ function connectSocket() {
 				if (json.hasOwnProperty("newUser")) {
 					updateParticipants(json.newUser.name, 'in');
 					initParticipants()
-						.then((newUser) => {
-							initProfileImage();
-						});
+						.then(() => {
+							fetchProfileImage(ROOM_INFO.UserToSeq[json.newUser.name].toString())
+								.then((image) => {
+									ROOM_INFO.profileImages[ROOM_INFO.UserToSeq[json.newUser.name]] = image;
+									const miniProfiles = document.getElementsByClassName('mini-profile');
+									const values = Object.values(ROOM_INFO.seqToUser);
+
+									for (let i = 0; i < miniProfiles.length; i++) {
+										const profile = miniProfiles[i];
+
+										let profileImage = profile.querySelector('.profile-img');
+										let nickname = profile.querySelector('.username');
+
+										if (!values.includes(nickname.textContent)) {
+											nickname.textContent = json.newUser.name;
+											profileImage.src = 'data:image/jpg;base64,' + image;
+										}
+									}
+								})
+						})
 
 					return;
 				}
@@ -231,15 +267,24 @@ function sendMessage() {
 	data.message = userSeq + ":" + document.getElementById("messageInput").value;  // 입력된 메시지 가져오기
 	SOCKET.socket.send(JSON.stringify(data));  // 메시지 전송
 
+	let now = new Date();
+	let timeStr = now.getHours().toString().padStart(2, '0') + ':' +
+		now.getMinutes().toString().padStart(2, '0');
+
 	let message = "<div class='messageBox sent'>"
-	let profile = "<div class='mini-profile'>";
-	profile += "<img src='data:image/jpg;base64," + ROOM_INFO.profileImages[userSeq] + "' alt='프로필' class='profile-img'>";
-	profile += "<span class='username' id='username'>" + ROOM_INFO.users[userSeq] + "</span>";
-	profile += "</div>"
+	message += "   <div class='message-wrapper'>";
+	let profile = "      <div class='mini-profile'>";
+	profile += "         <img src='data:image/jpg;base64," + ROOM_INFO.profileImages[userSeq] + "' alt='프로필' class='profile-img'>";
+	profile += "         <span class='username' id='username'>" + ROOM_INFO.seqToUser[userSeq] + "</span>";
+	profile += "      </div>"
 	message += profile;
-	let selfMessage = "<div class='message sent'>" + document.getElementById("messageInput").value + "</div>";
-	message += selfMessage;
+	message += "      <div class='message-content'>";
+	message += "         <div class='message sent'>" + document.getElementById("messageInput").value + "</div>";
+	message += "         <span class='time'>" + timeStr + "</span>";
+	message += "      </div>"
+	message += "   </div>"
 	message += "</div>"
+
 	let chatMessages = document.getElementById("chatMessages");
 	chatMessages.insertAdjacentHTML('beforeend', message);
 
