@@ -211,6 +211,27 @@ body {
     gap: 10px;
 }
 
+.date-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.date-divider::before,
+.date-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.date-divider span {
+    padding: 0 10px;
+    color: #6c757d;
+    font-size: 14px;
+    background: white;
+}
+
 #messageInput {
     flex: 1;
     padding: 10px;
