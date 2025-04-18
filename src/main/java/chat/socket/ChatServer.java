@@ -1,6 +1,7 @@
 package chat.socket;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,8 +73,8 @@ public class ChatServer {
                 // 클라이언트가 연결되었을 때 메시지 전송
                 Map<String, Object> map = new HashMap<>();
                 
-                String oldChatting = chattingLogManager.readChatting(roomName);
-                if (oldChatting == null || oldChatting.equals("")) {
+                List<Map<String, Object>> oldChatting = chattingLogManager.readChatting(roomName);
+                if (oldChatting == null) {
                 	return;
                 }
                 
@@ -84,9 +85,13 @@ public class ChatServer {
             }
 
             if (message.containsKey("message")) {
-            	chattingLogManager.saveChatting(roomName, (String) message.get("message"));
+            	chattingLogManager.saveChatting(roomName, message);
             	List<User> users = chattingRoomManager.getChattingRoom(roomName).getParticipatns();
-            	sendToAllExpectMe(users, session, message);
+            	List<Map<String, Object>> messageList = new ArrayList<>();
+            	messageList.add(message);
+            	Map<String, Object> map = new HashMap<>();
+            	map.put("message", messageList);
+            	sendToAllExpectMe(users, session, map);
                 return;
             }
         } catch (Exception e) {

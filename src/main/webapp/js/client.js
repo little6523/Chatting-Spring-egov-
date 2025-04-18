@@ -84,45 +84,37 @@ function makeChatbox(json) {
 	let chatMessages = document.getElementById("chatMessages");
 	let message = "";
 
-	let lines = json.message.split('\n');
-	lines.forEach((line, index) => {
-		if (line == '') return;
-		let chat = line.split(':');
-
-		// 현재 시간 포맷팅
-		let now = new Date();
-		let timeStr = now.getHours().toString().padStart(2, '0') + ':' +
-			now.getMinutes().toString().padStart(2, '0');
-
-		if (chat[0] == sessionStorage.getItem('seq')) {
+	for (let i = 0; i < json.message.length; i++) {
+		let chat = json.message[i];
+		if (chat.userSeq == sessionStorage.getItem('seq')) {
 			message += "<div class='messageBox sent'>";
 			message += "<div class='message-wrapper'>";
 			let profile = "<div class='mini-profile'>";
-			profile += "<img src='data:image/jpg;base64," + ROOM_INFO.profileImages[chat[0]] + "' alt='프로필' class='profile-img'>";
-			profile += "<span class='username'>" + ROOM_INFO.seqToUser[chat[0]] + "</span>";
+			profile += "<img src='data:image/jpg;base64," + ROOM_INFO.profileImages[chat.userSeq] + "' alt='프로필' class='profile-img'>";
+			profile += "<span class='username'>" + ROOM_INFO.seqToUser[chat.userSeq] + "</span>";
 			profile += "</div>";
 			message += profile;
 			message += "<div class='message-content'>";
-			message += "<div class='message sent'>" + chat[1] + "</div>";
-			message += "<span class='time'>" + timeStr + "</span>";
+			message += "<div class='message sent'>" + chat.message + "</div>";
+			message += "<span class='time'>" + chat.time + "</span>";
 			message += "</div>";
 			message += "</div>";
 		} else {
 			message += "<div class='messageBox received'>";
 			message += "<div class='message-wrapper'>";
 			let profile = "<div class='mini-profile'>";
-			profile += "<img src='data:image/jpg;base64," + ROOM_INFO.profileImages[chat[0]] + "' alt='프로필' class='profile-img'>";
-			profile += "<span class='username'>" + ROOM_INFO.seqToUser[chat[0]] + "</span>";
+			profile += "<img src='data:image/jpg;base64," + ROOM_INFO.profileImages[chat.userSeq] + "' alt='프로필' class='profile-img'>";
+			profile += "<span class='username'>" + ROOM_INFO.seqToUser[chat.userSeq] + "</span>";
 			profile += "</div>";
 			message += profile;
 			message += "<div class='message-content'>";
-			message += "<div class='message received'>" + chat[1] + "</div>";
-			message += "<span class='time'>" + timeStr + "</span>";
+			message += "<div class='message received'>" + chat.message + "</div>";
+			message += "<span class='time'>" + chat.time + "</span>";
 			message += "</div>";
 			message += "</div>";
 		}
 		message += "</div>";
-	});
+	}
 
 	chatMessages.insertAdjacentHTML('beforeend', message);
 	scrollToBottom();
@@ -261,15 +253,17 @@ document.getElementById('messageInput').addEventListener('keydown', function(eve
 });
 
 function sendMessage() {
-	const userSeq = sessionStorage.getItem('seq')
-	data = {};
-	data.roomName = USER.roomName;
-	data.message = userSeq + ":" + document.getElementById("messageInput").value;  // 입력된 메시지 가져오기
-	SOCKET.socket.send(JSON.stringify(data));  // 메시지 전송
-
 	let now = new Date();
 	let timeStr = now.getHours().toString().padStart(2, '0') + ':' +
 		now.getMinutes().toString().padStart(2, '0');
+
+	const userSeq = sessionStorage.getItem('seq')
+	data = {};
+	data.userSeq = userSeq;
+	data.roomName = USER.roomName;
+	data.message = document.getElementById("messageInput").value;
+	data.time = timeStr;
+	SOCKET.socket.send(JSON.stringify(data));
 
 	let message = "<div class='messageBox sent'>"
 	message += "   <div class='message-wrapper'>";
