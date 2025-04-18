@@ -86,7 +86,6 @@ body {
 
 .username {
     font-size: 14px;
-    color: #666;
 }
 
 .participants-list {
@@ -210,6 +209,27 @@ body {
     border-top: 1px solid #dee2e6;
     display: flex;
     gap: 10px;
+}
+
+.date-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 20px 0;
+}
+
+.date-divider::before,
+.date-divider::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.date-divider span {
+    padding: 0 10px;
+    color: #6c757d;
+    font-size: 14px;
+    background: white;
 }
 
 #messageInput {

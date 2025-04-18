@@ -83,27 +83,35 @@ function updateParticipants(username, type) {
 function makeChatbox(json) {
 	let chatMessages = document.getElementById("chatMessages");
 	let message = "";
+	let currentDate = null;
 
-	let lines = json.message.split('\n');
-	lines.forEach((line, index) => {
-		if (line == '') return;
-		let chat = line.split(':');
+	const existingDateDrivers = document.querySelectorAll('.date-driver span');
+	if (existingDateDrivers.length > 0) {
+		currentDate = existingDateDrivers[existingDateDrivers.length - 1].textContent;
+	}
 
-		// 현재 시간 포맷팅
-		let now = new Date();
-		let timeStr = now.getHours().toString().padStart(2, '0') + ':' +
-			now.getMinutes().toString().padStart(2, '0');
+	for (let i = 0; i < json.message.length; i++) {
+		let chat = json.message[i];
 
-		if (chat[0] == sessionStorage.getItem('seq')) {
+		let messageDate = new Date(chat.time);
+		let formattedDate = formatDate(messageDate);
+		let timeStr = formatTime(messageDate);
+
+		if (currentDate !== formattedDate) {
+			message += "<div class='date-driver'><span>" + formattedDate + "</span></div>"
+			currentDate = formattedDate;
+		}
+
+		if (chat.userSeq == sessionStorage.getItem('seq')) {
 			message += "<div class='messageBox sent'>";
 			message += "<div class='message-wrapper'>";
 			let profile = "<div class='mini-profile'>";
-			profile += "<img src='data:image/jpg;base64," + ROOM_INFO.profileImages[chat[0]] + "' alt='프로필' class='profile-img'>";
-			profile += "<span class='username'>" + ROOM_INFO.seqToUser[chat[0]] + "</span>";
+			profile += "<img src='data:image/jpg;base64," + ROOM_INFO.profileImages[chat.userSeq] + "' alt='프로필' class='profile-img'>";
+			profile += "<span class='username'>" + ROOM_INFO.seqToUser[chat.userSeq] + "</span>";
 			profile += "</div>";
 			message += profile;
 			message += "<div class='message-content'>";
-			message += "<div class='message sent'>" + chat[1] + "</div>";
+			message += "<div class='message sent'>" + chat.message + "</div>";
 			message += "<span class='time'>" + timeStr + "</span>";
 			message += "</div>";
 			message += "</div>";
@@ -111,21 +119,37 @@ function makeChatbox(json) {
 			message += "<div class='messageBox received'>";
 			message += "<div class='message-wrapper'>";
 			let profile = "<div class='mini-profile'>";
-			profile += "<img src='data:image/jpg;base64," + ROOM_INFO.profileImages[chat[0]] + "' alt='프로필' class='profile-img'>";
-			profile += "<span class='username'>" + ROOM_INFO.seqToUser[chat[0]] + "</span>";
+			profile += "<img src='data:image/jpg;base64," + ROOM_INFO.profileImages[chat.userSeq] + "' alt='프로필' class='profile-img'>";
+			profile += "<span class='username'>" + ROOM_INFO.seqToUser[chat.userSeq] + "</span>";
 			profile += "</div>";
 			message += profile;
 			message += "<div class='message-content'>";
-			message += "<div class='message received'>" + chat[1] + "</div>";
+			message += "<div class='message received'>" + chat.message + "</div>";
 			message += "<span class='time'>" + timeStr + "</span>";
 			message += "</div>";
 			message += "</div>";
 		}
 		message += "</div>";
-	});
+	}
 
 	chatMessages.insertAdjacentHTML('beforeend', message);
 	scrollToBottom();
+}
+
+function formatDate(date) {
+	const days = ['일', '월', '화', '수', '목', '금', '토'];
+	const year = date.getFullYear();
+	const month = date.getMonth() + 1;
+	const day = date.getDate();
+	const today = new Date();
+	const dayOfWeek = days[today.getDay()];
+
+	return year + '년 ' + month + '월 ' + day + '일 ' + dayOfWeek + '요일';
+}
+
+function formatTime(date) {
+	return date.getHours().toString().padStart(2, '0') + ':' +
+		   date.getMinutes().toString().padStart(2, '0');
 }
 
 $(document).ready(function() {
@@ -261,17 +285,28 @@ document.getElementById('messageInput').addEventListener('keydown', function(eve
 });
 
 function sendMessage() {
+	let now = new Date();
+	let timeStr = formatTime(now);
+
 	const userSeq = sessionStorage.getItem('seq')
 	data = {};
+	data.userSeq = userSeq;
 	data.roomName = USER.roomName;
-	data.message = userSeq + ":" + document.getElementById("messageInput").value;  // 입력된 메시지 가져오기
-	SOCKET.socket.send(JSON.stringify(data));  // 메시지 전송
+	data.message = document.getElementById("messageInput").value;
+	data.time = now.toISOString();
+	SOCKET.socket.send(JSON.stringify(data));
 
-	let now = new Date();
-	let timeStr = now.getHours().toString().padStart(2, '0') + ':' +
-		now.getMinutes().toString().padStart(2, '0');
+	let message = "";
 
-	let message = "<div class='messageBox sent'>"
+	const existingDateDividers = document.querySelectorAll('.date-driver span');
+	const formattedDate = formatDate(now);
+	const lastDate = existingDateDividers.length > 0 ? existingDateDividers[existingDateDividers.length - 1].textContent : null;
+
+	if (lastDate !== formattedDate) {
+		message += "<div class='date-driver'><span>" + formattedDate + "</span></div>"
+	}
+
+	message = "<div class='messageBox sent'>"
 	message += "   <div class='message-wrapper'>";
 	let profile = "      <div class='mini-profile'>";
 	profile += "         <img src='data:image/jpg;base64," + ROOM_INFO.profileImages[userSeq] + "' alt='프로필' class='profile-img'>";
